@@ -1,0 +1,294 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 1120px;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: .55;
+}
+
+.panel {
+  @apply rounded-lg border border-white/70 bg-white/[.72] shadow-glow backdrop-blur-xl;
+}
+
+.nav-button,
+.primary-button,
+.secondary-button,
+.icon-button {
+  @apply inline-flex min-h-11 items-center gap-2 rounded-lg px-4 text-sm font-semibold transition duration-200 focus:outline-none focus:ring-2 focus:ring-slate-900/30;
+}
+
+.nav-button {
+  @apply text-slate-600 hover:bg-white hover:text-slate-950;
+}
+
+.nav-button-active {
+  @apply bg-slate-950 text-amber-100 shadow-lg hover:bg-slate-900 hover:text-amber-100;
+}
+
+.primary-button {
+  @apply bg-slate-950 text-amber-100 shadow-lg hover:-translate-y-0.5 hover:bg-slate-800;
+}
+
+.secondary-button {
+  @apply border border-slate-200 bg-white/75 text-slate-700 hover:-translate-y-0.5 hover:bg-white hover:text-slate-950;
+}
+
+.icon-button {
+  @apply grid w-11 place-items-center border border-slate-200 bg-white/75 p-0 text-slate-700 hover:bg-white hover:text-slate-950;
+}
+
+.section-title {
+  @apply flex items-center gap-2 text-base font-semibold text-slate-900;
+}
+
+.field {
+  @apply w-full rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm outline-none transition focus:border-slate-700 focus:ring-2 focus:ring-slate-900/10;
+}
+
+.form-label {
+  @apply block space-y-2 text-sm font-medium text-slate-700;
+}
+
+.segmented {
+  @apply grid grid-cols-2 rounded-lg bg-slate-100 p-1;
+}
+
+.segmented button {
+  @apply min-h-10 rounded-md text-sm font-semibold text-slate-600 transition;
+}
+
+.segmented button.active {
+  @apply bg-white text-slate-950 shadow;
+}
+
+.metric {
+  @apply rounded-lg border border-white/70 bg-white/[.72] p-4 shadow-sm;
+}
+
+.metric span {
+  @apply block text-xs font-medium uppercase tracking-wide text-slate-500;
+}
+
+.metric strong {
+  @apply mt-1 block text-xl font-semibold text-slate-950;
+}
+
+.board-case {
+  @apply relative mx-auto w-full max-w-[820px] rounded-[10px] p-4 shadow-glow;
+  background:
+    linear-gradient(135deg, #442713 0%, #7a451e 22%, #b36b2d 48%, #673516 78%, #2b170d 100%);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 236, 190, .35),
+    inset 0 -8px 18px rgba(31, 16, 8, .48),
+    0 28px 80px rgba(15, 23, 42, .24);
+}
+
+.board-case::before {
+  content: '';
+  @apply pointer-events-none absolute inset-[9px] rounded-[8px] border border-amber-100/20;
+}
+
+.board-shell {
+  @apply relative aspect-square w-full rounded-[8px] border border-[#5a3418] p-[7.5%];
+  background:
+    linear-gradient(90deg, rgba(75, 38, 14, .10) 0 1px, transparent 1px 18px),
+    linear-gradient(90deg, rgba(255, 238, 187, .18) 0 2px, transparent 2px 38px),
+    linear-gradient(0deg, rgba(69, 34, 12, .08) 0 1px, transparent 1px 30px),
+    linear-gradient(135deg, #c48639 0%, #e4b568 34%, #c78335 67%, #a65f26 100%);
+  box-shadow:
+    inset 0 0 0 8px rgba(91, 48, 18, .32),
+    inset 0 0 0 11px rgba(255, 227, 166, .16),
+    inset 0 16px 30px rgba(255,255,255,.16),
+    inset 0 -18px 34px rgba(67, 31, 9, .24);
+}
+
+.board-shell::before {
+  content: '';
+  @apply pointer-events-none absolute inset-[7.5%] rounded-sm;
+  border: 2px solid rgba(35, 21, 10, .9);
+}
+
+.board-grid {
+  @apply relative z-10 h-full w-full;
+}
+
+.board-lines {
+  @apply pointer-events-none absolute inset-0 z-0 h-full w-full overflow-visible;
+}
+
+.board-lines line {
+  stroke: rgba(30, 18, 8, .88);
+  stroke-width: 1.35;
+  shape-rendering: crispEdges;
+}
+
+.board-lines circle {
+  fill: #1d1208;
+  stroke: rgba(255, 235, 180, .28);
+  stroke-width: .25;
+}
+
+.board-cell {
+  @apply absolute z-10 grid place-items-center bg-transparent;
+  width: clamp(22px, 3.45vw, 38px);
+  height: clamp(22px, 3.45vw, 38px);
+  min-width: 0;
+  border: 0;
+  transform: translate(-50%, -50%);
+}
+
+.ghost-stone {
+  @apply pointer-events-none absolute h-[78%] w-[78%] rounded-full opacity-0 transition duration-200;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(.75);
+}
+
+.board-cell:hover .ghost-stone {
+  opacity: .42;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.ghost-stone.black {
+  background: #030303;
+}
+
+.ghost-stone.white {
+  background: #f3eee5;
+}
+
+.stone {
+  @apply absolute z-20 h-[82%] w-[82%] rounded-full animate-stone-in;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 1;
+  box-shadow:
+    inset 0 2px 3px rgba(255,255,255,.16),
+    inset 0 -5px 8px rgba(0,0,0,.42),
+    0 5px 10px rgba(35, 21, 10, .42);
+}
+
+.stone.black {
+  background: #000;
+  border: 1px solid #000;
+}
+
+.stone.white {
+  background: #fff;
+  border: 1px solid #d3d3d3;
+  box-shadow:
+    inset 0 -4px 7px rgba(0,0,0,.16),
+    inset 0 2px 3px rgba(255,255,255,.95),
+    0 5px 10px rgba(35, 21, 10, .34);
+}
+
+.last-stone {
+  @apply ring-2 ring-amber-300;
+}
+
+.win-stone {
+  @apply animate-soft-pulse ring-4 ring-emerald-400;
+}
+
+.last-dot {
+  @apply absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-300;
+}
+
+.board-coords {
+  @apply pointer-events-none absolute z-20 grid text-[12px] font-semibold text-[#3a1f0d]/80;
+  font-variant-numeric: tabular-nums;
+}
+
+.board-coords.top,
+.board-coords.bottom {
+  left: 7.5%;
+  right: 7.5%;
+  grid-template-columns: repeat(15, minmax(0, 1fr));
+}
+
+.board-coords.top {
+  top: 2.2%;
+}
+
+.board-coords.bottom {
+  bottom: 2.2%;
+}
+
+.board-coords.left,
+.board-coords.right {
+  top: 7.5%;
+  bottom: 7.5%;
+  grid-template-rows: repeat(15, minmax(0, 1fr));
+}
+
+.board-coords.left {
+  left: 2.2%;
+}
+
+.board-coords.right {
+  right: 2.2%;
+}
+
+.board-coords span {
+  @apply grid place-items-center;
+}
+
+.record-row {
+  @apply flex w-full flex-col items-start gap-1 px-5 py-4 text-left transition hover:bg-white/70;
+}
+
+.record-row.active {
+  @apply bg-slate-950 text-amber-100 hover:bg-slate-950;
+}
+
+.record-row.active span {
+  @apply text-amber-100;
+}
+
+.data-table {
+  @apply w-full border-separate border-spacing-0 text-left text-sm;
+}
+
+.data-table th {
+  @apply border-b border-slate-200 bg-white/70 px-3 py-3 font-semibold text-slate-600;
+}
+
+.data-table td {
+  @apply border-b border-slate-100 px-3 py-3 text-slate-700;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+  }
+}
