@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { KeyRound, UserPlus } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { adminEmail, isSupabaseConfigured, signIn, signUp } from '../lib/supabase';
+import { isSupabaseConfigured, signIn, signUp } from '../lib/supabase';
 import { ConfigNotice } from '../components/ConfigNotice';
 
 export function AuthPage({ onDone }: { onDone: () => void }) {
@@ -40,11 +40,10 @@ export function AuthPage({ onDone }: { onDone: () => void }) {
         <div className="bg-slate-950 p-8 text-amber-100">
           <h1 className="font-serif text-3xl font-semibold">账户入口</h1>
           <p className="mt-4 text-sm leading-7 text-amber-100/[.78]">
-            使用 Supabase Auth 管理账号。管理员不是特殊页面创建，而是用配置邮箱登录：
-            <span className="font-semibold"> {adminEmail}</span>。
+            登录后可保存棋谱、查看个人记录。管理员登录后会自动显示后台入口。
           </p>
           <div className="mt-8 rounded-lg border border-amber-200/20 p-4 text-sm text-amber-50/80">
-            云端未配置时，游戏仍可运行；账号和后台入口会等待配置完成后启用。
+            普通用户可以注册账号；管理员账号由系统内置识别。
           </div>
         </div>
         <form className="space-y-4 p-8" onSubmit={submit}>
@@ -67,7 +66,7 @@ export function AuthPage({ onDone }: { onDone: () => void }) {
             <input className="field" type="password" required value={password} onChange={(event) => setPassword(event.target.value)} placeholder="至少 6 位" />
           </label>
           {error && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-          <button className="primary-button w-full justify-center" disabled={!isSupabaseConfigured || loading}>
+          <button className="primary-button w-full justify-center" disabled={(!isSupabaseConfigured && isRegister) || loading}>
             {loading ? '处理中...' : isRegister ? '创建账号' : '登录'}
           </button>
           <button type="button" className="w-full text-sm font-medium text-slate-600 hover:text-slate-950" onClick={() => setIsRegister((value) => !value)}>

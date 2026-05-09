@@ -12,7 +12,7 @@ type View = 'game' | 'records' | 'user' | 'admin' | 'auth';
 
 const nav = [
   { id: 'game', label: '对弈大厅', icon: Swords },
-  { id: 'records', label: '棋谱库', icon: BookOpen },
+  { id: 'records', label: '棋局库', icon: BookOpen },
   { id: 'user', label: '用户中心', icon: UserRound },
 ] as const;
 
@@ -27,19 +27,19 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-dvh bg-[radial-gradient(circle_at_20%_0%,#f4e3ba_0,#f8fafc_34%,#dbe7e3_100%)] text-slate-950">
-      <header className="sticky top-0 z-30 border-b border-white/60 bg-white/70 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <button className="flex items-center gap-3 text-left" onClick={() => setView('game')} aria-label="回到对弈大厅">
-            <span className="grid h-11 w-11 place-items-center rounded-lg bg-slate-950 text-amber-200 shadow-glow">
+    <div className="app-shell">
+      <header className="glass-header">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-6 py-4 max-md:flex-wrap max-md:px-4 max-md:py-3">
+          <button className="flex min-w-0 items-center gap-3 text-left" onClick={() => setView('game')} aria-label="回到对弈大厅">
+            <span className="brand-mark">
               <Crown size={22} />
             </span>
-            <span>
-              <span className="block font-serif text-2xl font-semibold">弈境</span>
-              <span className="block text-xs uppercase tracking-[.22em] text-slate-500">Renju Pro Arena</span>
+            <span className="min-w-0">
+              <span className="block font-serif text-2xl font-semibold max-md:text-xl">弈境</span>
+              <span className="block truncate text-xs uppercase tracking-[.22em] text-slate-500 max-sm:max-w-36">Renju Pro Arena</span>
             </span>
           </button>
-          <nav className="flex items-center gap-2">
+          <nav className="flex items-center gap-2 max-md:order-3 max-md:w-full max-md:overflow-x-auto max-md:pb-1">
             {nav.map((item) => {
               const Icon = item.icon;
               return (
@@ -56,10 +56,10 @@ export default function App() {
               </button>
             )}
           </nav>
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 items-center gap-2">
             {user ? (
               <>
-                <span className="max-w-44 truncate text-sm text-slate-600">{user.email}</span>
+                <span className="max-w-44 truncate text-sm text-slate-600 max-sm:hidden">{user.email}</span>
                 <button className="icon-button" onClick={logout} aria-label="退出登录">
                   <LogOut size={18} />
                 </button>
@@ -73,7 +73,7 @@ export default function App() {
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-7xl px-6 py-8">
+      <main className="relative z-10 mx-auto max-w-7xl px-6 py-8 max-md:px-3 max-md:py-4">
         {view === 'game' && <GamePage />}
         {view === 'records' && <RecordsPage />}
         {view === 'user' && <UserPage onLogin={() => setView('auth')} />}

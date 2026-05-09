@@ -13,8 +13,7 @@ create table if not exists public.game_records (
   user_id uuid references auth.users(id) on delete set null,
   user_email text,
   mode text not null check (mode in ('free', 'standard')),
-  player_mode text not null check (player_mode in ('ai', 'local')),
-  opening_name text,
+  player_mode text not null check (player_mode in ('ai', 'local', 'online')),
   winner text,
   reason text,
   moves jsonb not null default '[]'::jsonb,
@@ -22,15 +21,31 @@ create table if not exists public.game_records (
   created_at timestamptz not null default now()
 );
 
-create table if not exists public.openings (
-  id text primary key,
-  name text not null,
-  family text not null check (family in ('direct', 'diagonal')),
-  black1 jsonb not null,
-  white2 jsonb not null,
-  black3 jsonb not null,
-  created_at timestamptz not null default now()
+alter table public.game_records
+drop column if exists opening_name;
+
+drop table if exists public.openings;
+
+create table if not exists public.online_rooms (
+  id uuid primary key default gen_random_uuid(),
+  code text not null unique,
+  host_id uuid references auth.users(id) on delete set null,
+  guest_id uuid references auth.users(id) on delete set null,
+  host_email text,
+  guest_email text,
+  host_color text not null default 'black' check (host_color in ('black', 'white')),
+  status text not null default 'waiting' check (status in ('waiting', 'playing', 'finished')),
+  board jsonb not null,
+  moves jsonb not null default '[]'::jsonb,
+  chat_messages jsonb not null default '[]'::jsonb,
+  next_color text not null default 'black' check (next_color in ('black', 'white')),
+  winner text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
 );
+
+alter table public.online_rooms
+add column if not exists chat_messages jsonb not null default '[]'::jsonb;
 
 create or replace function public.handle_new_user()
 returns trigger
@@ -51,6 +66,21 @@ begin
 end;
 $$;
 
+create or replace function public.is_admin()
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select exists (
+    select 1
+    from public.profiles
+    where id = auth.uid()
+      and role = 'admin'
+  );
+$$;
+
 drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
 after insert on auth.users
@@ -58,14 +88,14 @@ for each row execute function public.handle_new_user();
 
 alter table public.profiles enable row level security;
 alter table public.game_records enable row level security;
-alter table public.openings enable row level security;
+alter table public.online_rooms enable row level security;
 
 drop policy if exists "profiles readable by owner or admin" on public.profiles;
 create policy "profiles readable by owner or admin"
 on public.profiles for select
 using (
   auth.uid() = id
-  or exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin')
+  or public.is_admin()
 );
 
 drop policy if exists "profiles owner update" on public.profiles;
@@ -84,48 +114,28 @@ on public.game_records for select
 using (
   user_id = auth.uid()
   or user_id is null
-  or exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin')
+  or public.is_admin()
 );
 
 drop policy if exists "records admin delete" on public.game_records;
 create policy "records admin delete"
 on public.game_records for delete
-using (exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin'));
+using (public.is_admin());
 
-drop policy if exists "openings readable by everyone" on public.openings;
-create policy "openings readable by everyone"
-on public.openings for select
+drop policy if exists "online rooms readable by everyone" on public.online_rooms;
+create policy "online rooms readable by everyone"
+on public.online_rooms for select
 using (true);
 
-insert into public.openings (id, name, family, black1, white2, black3)
-values
-('direct-1','直指 寒星','direct','{"row":7,"col":7}','{"row":6,"col":7}','{"row":5,"col":7}'),
-('direct-2','直指 溪月','direct','{"row":7,"col":7}','{"row":6,"col":7}','{"row":5,"col":8}'),
-('direct-3','直指 疏星','direct','{"row":7,"col":7}','{"row":6,"col":7}','{"row":5,"col":9}'),
-('direct-4','直指 花月','direct','{"row":7,"col":7}','{"row":6,"col":7}','{"row":6,"col":5}'),
-('direct-5','直指 残月','direct','{"row":7,"col":7}','{"row":6,"col":7}','{"row":6,"col":6}'),
-('direct-6','直指 雨月','direct','{"row":7,"col":7}','{"row":6,"col":7}','{"row":6,"col":8}'),
-('direct-7','直指 金星','direct','{"row":7,"col":7}','{"row":6,"col":7}','{"row":6,"col":9}'),
-('direct-8','直指 松月','direct','{"row":7,"col":7}','{"row":6,"col":7}','{"row":7,"col":8}'),
-('direct-9','直指 丘月','direct','{"row":7,"col":7}','{"row":6,"col":7}','{"row":7,"col":9}'),
-('direct-10','直指 新月','direct','{"row":7,"col":7}','{"row":6,"col":7}','{"row":8,"col":7}'),
-('direct-11','直指 瑞星','direct','{"row":7,"col":7}','{"row":6,"col":7}','{"row":8,"col":8}'),
-('direct-12','直指 山月','direct','{"row":7,"col":7}','{"row":6,"col":7}','{"row":8,"col":9}'),
-('direct-13','直指 游星','direct','{"row":7,"col":7}','{"row":6,"col":7}','{"row":9,"col":7}'),
-('diagonal-1','斜指 长星','diagonal','{"row":7,"col":7}','{"row":6,"col":6}','{"row":5,"col":5}'),
-('diagonal-2','斜指 峡月','diagonal','{"row":7,"col":7}','{"row":6,"col":6}','{"row":5,"col":6}'),
-('diagonal-3','斜指 恒星','diagonal','{"row":7,"col":7}','{"row":6,"col":6}','{"row":6,"col":5}'),
-('diagonal-4','斜指 水月','diagonal','{"row":7,"col":7}','{"row":6,"col":6}','{"row":5,"col":7}'),
-('diagonal-5','斜指 流星','diagonal','{"row":7,"col":7}','{"row":6,"col":6}','{"row":7,"col":5}'),
-('diagonal-6','斜指 云月','diagonal','{"row":7,"col":7}','{"row":6,"col":6}','{"row":6,"col":8}'),
-('diagonal-7','斜指 浦月','diagonal','{"row":7,"col":7}','{"row":6,"col":6}','{"row":5,"col":9}'),
-('diagonal-8','斜指 岚月','diagonal','{"row":7,"col":7}','{"row":6,"col":6}','{"row":8,"col":5}'),
-('diagonal-9','斜指 银月','diagonal','{"row":7,"col":7}','{"row":6,"col":6}','{"row":8,"col":6}'),
-('diagonal-10','斜指 明星','diagonal','{"row":7,"col":7}','{"row":6,"col":6}','{"row":8,"col":8}'),
-('diagonal-11','斜指 斜月','diagonal','{"row":7,"col":7}','{"row":6,"col":6}','{"row":8,"col":9}'),
-('diagonal-12','斜指 名月','diagonal','{"row":7,"col":7}','{"row":6,"col":6}','{"row":9,"col":5}'),
-('diagonal-13','斜指 彗星','diagonal','{"row":7,"col":7}','{"row":6,"col":6}','{"row":9,"col":9}')
-on conflict (id) do nothing;
+drop policy if exists "online rooms insert by everyone" on public.online_rooms;
+create policy "online rooms insert by everyone"
+on public.online_rooms for insert
+with check (true);
+
+drop policy if exists "online rooms update by everyone" on public.online_rooms;
+create policy "online rooms update by everyone"
+on public.online_rooms for update
+using (true);
 
 -- After running this schema, set the first admin manually if needed:
 -- update public.profiles set role = 'admin' where lower(email) = lower('your-admin@example.com');

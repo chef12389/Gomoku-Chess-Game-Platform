@@ -1,6 +1,6 @@
 export type Stone = 'black' | 'white';
 export type Cell = Stone | null;
-export type PlayerMode = 'ai' | 'local';
+export type PlayerMode = 'ai' | 'local' | 'online';
 export type OpeningMode = 'free' | 'standard';
 export type GamePhase = 'playing' | 'swap-offer' | 'n-move' | 'finished';
 export type ResultReason = 'five' | 'white-overline' | 'black-forbidden' | 'resign' | 'timeout' | 'draw';
@@ -40,12 +40,38 @@ export interface GameRecord {
   userEmail?: string;
   mode: OpeningMode;
   playerMode: PlayerMode;
-  openingName?: string;
   winner?: Stone | 'draw';
   reason?: string;
   moves: Move[];
   createdAt: string;
   durationSeconds: number;
+}
+
+export interface OnlineRoom {
+  id: string;
+  code: string;
+  host_id: string | null;
+  guest_id: string | null;
+  host_email: string | null;
+  guest_email: string | null;
+  host_color: Stone;
+  status: 'waiting' | 'playing' | 'finished';
+  board: Cell[][];
+  moves: Move[];
+  chat_messages: OnlineChatMessage[];
+  next_color: Stone;
+  winner: Stone | 'draw' | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OnlineChatMessage {
+  id: string;
+  sender_id: string | null;
+  sender_email: string | null;
+  sender_color: Stone;
+  text: string;
+  created_at: string;
 }
 
 export interface OpeningDefinition {
@@ -69,5 +95,4 @@ export interface AppStats {
   userCount: number;
   matchCount: number;
   aiWinRate: number;
-  popularOpening: string;
 }

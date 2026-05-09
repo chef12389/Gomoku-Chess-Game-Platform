@@ -71,26 +71,59 @@ function hasOverline(board: Cell[][], point: Point, color: Stone): Point[] {
   return [];
 }
 
-function scanWindow(line: string, placedOffset: number, pattern: RegExp): number {
-  let count = 0;
-  for (let start = 0; start < line.length; start += 1) {
-    pattern.lastIndex = start;
-    const match = pattern.exec(line);
-    if (!match) break;
-    const from = match.index;
-    const to = from + match[0].length - 1;
-    if (placedOffset >= from && placedOffset <= to) count += 1;
-    start = match.index;
-  }
-  return count;
+function wouldMakeExactFive(board: Cell[][], point: Point, color: Stone, direction: Point): boolean {
+  if (!isInside(point) || board[point.row][point.col]) return false;
+  const next = applyMove(board, point, color);
+  return getLineThrough(next, point, color, direction).length === 5;
 }
 
-function directionalText(board: Cell[][], point: Point, color: Stone, direction: Point): { text: string; offset: number } {
+function winningExtensionsInDirection(board: Cell[][], point: Point, color: Stone, direction: Point): Point[] {
+  const extensions: Point[] = [];
+  for (let step = -5; step <= 5; step += 1) {
+    if (step === 0) continue;
+    const cursor = { row: point.row + direction.row * step, col: point.col + direction.col * step };
+    if (wouldMakeExactFive(board, cursor, color, direction)) extensions.push(cursor);
+  }
+  return extensions;
+}
+
+function hasOpenFourInDirection(board: Cell[][], point: Point, color: Stone, direction: Point): boolean {
+  return winningExtensionsInDirection(board, point, color, direction).length >= 2;
+}
+
+function countOpenThreeDirections(board: Cell[][], point: Point, color: Stone): number {
+  let total = 0;
+  for (const direction of DIRECTIONS) {
+    let found = false;
+    for (let step = -4; step <= 4; step += 1) {
+      if (step === 0) continue;
+      const cursor = { row: point.row + direction.row * step, col: point.col + direction.col * step };
+      if (!isInside(cursor) || board[cursor.row][cursor.col]) continue;
+      const next = applyMove(board, cursor, color);
+      const line = getLineThrough(next, cursor, color, direction);
+      if (line.length > 4) continue;
+      if (hasOpenFourInDirection(next, cursor, color, direction)) {
+        found = true;
+        break;
+      }
+    }
+    if (found) total += 1;
+  }
+  return total;
+}
+
+function countFourDirections(board: Cell[][], point: Point, color: Stone): number {
+  let total = 0;
+  for (const direction of DIRECTIONS) {
+    if (winningExtensionsInDirection(board, point, color, direction).length > 0) total += 1;
+  }
+  return total;
+}
+
+function directionalText(board: Cell[][], point: Point, color: Stone, direction: Point): string {
   const chars: string[] = [];
-  let offset = 0;
   for (let step = -5; step <= 5; step += 1) {
     const cursor = { row: point.row + direction.row * step, col: point.col + direction.col * step };
-    if (step === 0) offset = chars.length;
     if (!isInside(cursor)) {
       chars.push('x');
     } else {
@@ -98,26 +131,26 @@ function directionalText(board: Cell[][], point: Point, color: Stone, direction:
       chars.push(cell === color ? '1' : cell === null ? '0' : '2');
     }
   }
-  return { text: chars.join(''), offset };
+  return chars.join('');
 }
 
-function countOpenThrees(board: Cell[][], point: Point, color: Stone): number {
+function countPatternOpenThrees(board: Cell[][], point: Point, color: Stone): number {
   let total = 0;
-  const patterns = [/01110/g, /010110/g, /011010/g];
+  const patterns = [/01110/, /010110/, /011010/, /0101110/, /0111010/];
   for (const direction of DIRECTIONS) {
-    const { text, offset } = directionalText(board, point, color, direction);
-    const found = patterns.some((pattern) => scanWindow(text, offset, pattern) > 0);
+    const text = directionalText(board, point, color, direction);
+    const found = patterns.some((pattern) => pattern.test(text));
     if (found) total += 1;
   }
   return total;
 }
 
-function countFours(board: Cell[][], point: Point, color: Stone): number {
+function countPatternFours(board: Cell[][], point: Point, color: Stone): number {
   let total = 0;
-  const patterns = [/011110/g, /211110/g, /011112/g, /10111/g, /11011/g, /11101/g, /01111/g, /11110/g];
+  const patterns = [/011110/, /211110/, /011112/, /10111/, /11011/, /11101/, /01111/, /11110/];
   for (const direction of DIRECTIONS) {
-    const { text, offset } = directionalText(board, point, color, direction);
-    const found = patterns.some((pattern) => scanWindow(text, offset, pattern) > 0);
+    const text = directionalText(board, point, color, direction);
+    const found = patterns.some((pattern) => pattern.test(text));
     if (found) total += 1;
   }
   return total;
@@ -131,9 +164,9 @@ export function detectForbidden(board: Cell[][], point: Point): ForbiddenResult 
   if (hasExactFive(board, point, color).length === 5) {
     return { isForbidden: false, overline: false, doubleThree: false, doubleFour: false, openThrees: 0, fours: 0 };
   }
-  const overline = hasOverline(board, point, color).length > 5;
-  const openThrees = countOpenThrees(board, point, color);
-  const fours = countFours(board, point, color);
+  const overline = hasOverline(board, point, color).length > 0;
+  const openThrees = Math.max(countOpenThreeDirections(board, point, color), countPatternOpenThrees(board, point, color));
+  const fours = Math.max(countFourDirections(board, point, color), countPatternFours(board, point, color));
   const doubleThree = openThrees >= 2;
   const doubleFour = fours >= 2;
   const reasons = [
