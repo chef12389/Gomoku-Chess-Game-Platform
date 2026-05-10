@@ -158,6 +158,7 @@ export async function fetchGameRecords(): Promise<GameRecord[]> {
     moves: item.moves,
     createdAt: item.created_at,
     durationSeconds: item.duration_seconds,
+    moveTimeLimitSeconds: null,
   }));
   const merged = new Map<string, GameRecord>();
   [...cloud, ...local].forEach((record) => merged.set(record.id, record));

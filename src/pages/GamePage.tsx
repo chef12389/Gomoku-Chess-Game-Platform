@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Bot, Clock3, LogOut, MessageCircle, Play, RotateCcw, Save, Send, ShieldAlert, Sparkles, Undo2, Users, Wifi } from 'lucide-react';
+import { Bell, Bot, Clock3, LogOut, MessageCircle, Play, RotateCcw, Send, ShieldAlert, Sparkles, Undo2, Users, Volume2, VolumeX, Wifi } from 'lucide-react';
 import { Board } from '../components/Board';
 import { ConfigNotice } from '../components/ConfigNotice';
 import { useAuth } from '../hooks/useAuth';
@@ -19,6 +19,7 @@ import {
   shouldSwapOpening,
 } from '../lib/openings';
 import { createOnlineRoom, fetchOnlineRoom, isSupabaseConfigured, joinOnlineRoom, saveGameRecord, sendOnlineRoomMessage, updateOnlineRoomMove } from '../lib/supabase';
+import { playSound } from '../lib/sound';
 import type { Cell, GamePhase, GameRecord, Move, OnlineRoom, OpeningDefinition, OpeningMode, PlayerMode, Point, Stone, WinResult } from '../types';
 
 const CUSTOM_OPENING_ID = 'custom-opening';
@@ -33,6 +34,8 @@ const AI_DIFFICULTY_OPTIONS: Array<{ id: AiDifficulty; label: string; depth: num
   { id: 'advanced', label: '高级', depth: 6 },
   { id: 'professional', label: '专业', depth: 8 },
 ];
+const MOVE_TIME_LIMIT_OPTIONS = [0, 15, 30, 60, 120];
+const soundStorageKey = 'renju.sound.enabled';
 
 const colorText = (color: Stone) => (color === 'black' ? '黑方' : '白方');
 const colorShort = (color: Stone) => (color === 'black' ? '黑' : '白');
@@ -105,11 +108,17 @@ export function GamePage() {
   const [message, setMessage] = useState('请选择对局模式和规则后开始。');
   const [blackSeconds, setBlackSeconds] = useState(0);
   const [whiteSeconds, setWhiteSeconds] = useState(0);
+  const [currentTurnSeconds, setCurrentTurnSeconds] = useState(0);
+  const [moveTimeLimitSeconds, setMoveTimeLimitSeconds] = useState(0);
+  const [turnAlerted, setTurnAlerted] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    return localStorage.getItem(soundStorageKey) !== 'false';
+  });
   const [nCount, setNCount] = useState(3);
   const [nCandidates, setNCandidates] = useState<Point[]>([]);
   const [aiThinking, setAiThinking] = useState(false);
   const [aiProgress, setAiProgress] = useState(0);
-  const [saveNotice, setSaveNotice] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const timerRef = useRef<number | null>(null);
   const progressRef = useRef<number | null>(null);
   const aiWorkerRef = useRef<Worker | null>(null);
@@ -162,11 +171,29 @@ export function GamePage() {
     timerRef.current = window.setInterval(() => {
       if (nextColor === 'black') setBlackSeconds((value) => value + 1);
       else setWhiteSeconds((value) => value + 1);
+      setCurrentTurnSeconds((value) => value + 1);
     }, 1000);
     return () => {
       if (timerRef.current) window.clearInterval(timerRef.current);
     };
   }, [screen, nextColor, phase]);
+
+  useEffect(() => {
+    localStorage.setItem(soundStorageKey, soundEnabled ? 'true' : 'false');
+  }, [soundEnabled]);
+
+  useEffect(() => {
+    setCurrentTurnSeconds(0);
+    setTurnAlerted(false);
+  }, [nextColor, moves.length, screen]);
+
+  useEffect(() => {
+    if (screen !== 'board' || phase === 'finished' || !moveTimeLimitSeconds || turnAlerted) return;
+    if (currentTurnSeconds < moveTimeLimitSeconds) return;
+    setTurnAlerted(true);
+    playSound('alert', soundEnabled);
+    setMessage(`${colorText(nextColor)}本手已超过 ${moveTimeLimitSeconds} 秒，请尽快落子。`);
+  }, [currentTurnSeconds, moveTimeLimitSeconds, nextColor, phase, screen, soundEnabled, turnAlerted]);
 
   useEffect(() => {
     if (playerMode !== 'online' || !onlineRoom) return undefined;
@@ -201,10 +228,11 @@ export function GamePage() {
     setResult({ winner: null, line: [] });
     setBlackSeconds(0);
     setWhiteSeconds(0);
+    setCurrentTurnSeconds(0);
+    setTurnAlerted(false);
     setNCandidates([]);
     setAiThinking(false);
     setAiProgress(0);
-    setSaveNotice(null);
     autoSavedRecordKeyRef.current = null;
   };
 
@@ -334,6 +362,7 @@ export function GamePage() {
     if (!terminal.reason) return false;
     setResult(terminal);
     setPhase('finished');
+    playSound('win', soundEnabled);
     setMessage(terminal.winner ? `${colorText(terminal.winner)}获胜：${terminal.forbidden?.reason || terminal.reason}` : '棋盘已满，平局。');
     return true;
   };
@@ -343,6 +372,7 @@ export function GamePage() {
     const move = makeMove(point, color, moves.length + 1, nextBoard, aiScore);
     setBoard(nextBoard);
     setMoves((value) => [...value, move]);
+    playSound('place', soundEnabled);
     if (finishIfNeeded(nextBoard, move)) return;
 
     const after = opponent(color);
@@ -450,10 +480,12 @@ export function GamePage() {
       const winner = terminal.winner || (terminal.reason === 'draw' ? 'draw' : null);
       setBoard(nextBoard);
       setMoves(nextMoves);
+      playSound('place', soundEnabled);
       setNextColor(opponent(nextColor));
       if (terminal.reason) {
         setResult(terminal);
         setPhase('finished');
+        playSound('win', soundEnabled);
         setMessage(winner === 'draw' ? '在线对局结束：平局。' : `在线对局结束：${terminal.winner ? colorText(terminal.winner) : ''}获胜。`);
       }
       void updateOnlineRoomMove(onlineRoom, nextBoard, nextMoves, opponent(nextColor), winner);
@@ -601,6 +633,7 @@ export function GamePage() {
       moves,
       createdAt: new Date().toISOString(),
       durationSeconds: blackSeconds + whiteSeconds,
+      moveTimeLimitSeconds: moveTimeLimitSeconds || null,
     };
   };
 
@@ -612,26 +645,6 @@ export function GamePage() {
     const record = buildGameRecord();
     if (record) void saveGameRecord(record);
   }, [phase, moves, result.reason, result.winner, result.forbidden?.reason, mode, playerMode, user?.id, user?.email, blackSeconds, whiteSeconds]);
-
-  const save = () => {
-    try {
-      const record = buildGameRecord();
-      if (!record) {
-        const text = '当前还没有落子，无法保存棋局。';
-        setSaveNotice({ type: 'error', text });
-        setMessage(text);
-        return;
-      }
-      void saveGameRecord(record);
-      const text = '棋局保存成功，可前往棋局库查看。';
-      setSaveNotice({ type: 'success', text });
-      setMessage(text);
-    } catch (err) {
-      const text = err instanceof Error ? err.message : '棋局保存失败，请稍后重试。';
-      setSaveNotice({ type: 'error', text });
-      setMessage(`棋局保存失败：${text}`);
-    }
-  };
 
   const difficultyControl = (
     <div className="segmented mt-2">
@@ -726,6 +739,23 @@ export function GamePage() {
                 {difficultyControl}
               </div>
             )}
+            <div className="glass-card">
+              <label className="form-label">出子时间提醒</label>
+              <div className="segmented segmented-5 mt-2">
+                {MOVE_TIME_LIMIT_OPTIONS.map((seconds) => (
+                  <button key={seconds} className={moveTimeLimitSeconds === seconds ? 'active' : ''} onClick={() => setMoveTimeLimitSeconds(seconds)}>
+                    {seconds ? `${seconds}s` : '不限'}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="glass-card">
+              <label className="form-label">音效反馈</label>
+              <button type="button" className="secondary-button mt-2 w-full justify-center" onClick={() => setSoundEnabled((value) => !value)}>
+                {soundEnabled ? <Volume2 size={17} /> : <VolumeX size={17} />}
+                {soundEnabled ? '已开启' : '已关闭'}
+              </button>
+            </div>
             {mode === 'standard' && (
               <>
                 <div className="glass-card max-lg:col-span-2 max-md:col-span-1">
@@ -792,16 +822,18 @@ export function GamePage() {
             <div className="flex flex-wrap gap-2 max-md:w-full">
               <button className="secondary-button" onClick={undo}><Undo2 size={17} />悔棋</button>
               <button className="secondary-button" onClick={startGame}><RotateCcw size={17} />重开</button>
-              <button type="button" className="primary-button" onClick={save}><Save size={17} />保存</button>
             </div>
           </div>
-          {saveNotice && <div className={`mb-4 rounded-lg px-4 py-3 text-sm font-medium ${saveNotice.type === 'success' ? 'bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200' : 'bg-red-50 text-red-700 ring-1 ring-red-200'}`}>{saveNotice.text}</div>}
           <Board board={board} nextColor={nextColor} moves={moves} winningLine={result.line} suggestedPoints={suggestedPoints} disabled={phase === 'finished'} onPlace={place} />
         </div>
         <aside className="space-y-4">
           <div className="panel p-5">
             <h2 className="section-title"><Sparkles size={18} />对局控制</h2>
-            <button className="secondary-button mt-4 w-full justify-center" onClick={() => setScreen('setup')}>返回设置</button>
+            <button type="button" className="secondary-button mt-4 w-full justify-center" onClick={() => setSoundEnabled((value) => !value)}>
+              {soundEnabled ? <Volume2 size={17} /> : <VolumeX size={17} />}
+              {soundEnabled ? '音效开启' : '音效关闭'}
+            </button>
+            <button className="secondary-button mt-3 w-full justify-center" onClick={() => setScreen('setup')}>返回设置</button>
             <button className="secondary-button mt-3 w-full justify-center" onClick={() => setScreen('home')}>返回首页</button>
             {playerMode === 'online' && onlineRoom && (
               <button className="danger-button mt-3 w-full justify-center" onClick={leaveOnlineRoom}>
@@ -859,6 +891,15 @@ export function GamePage() {
             <div className="mt-4 grid grid-cols-2 gap-3">
               <div className="metric"><span>黑方</span><strong>{formatTime(blackSeconds)}</strong></div>
               <div className="metric"><span>白方</span><strong>{formatTime(whiteSeconds)}</strong></div>
+            </div>
+            <div className="mt-3 rounded-lg border border-white/70 bg-white/55 p-3 text-sm text-slate-700">
+              <div className="flex items-center justify-between gap-3">
+                <span className="inline-flex items-center gap-2 font-semibold"><Bell size={16} />本手用时</span>
+                <strong className="tabular-nums">{formatTime(currentTurnSeconds)}</strong>
+              </div>
+              <p className="mt-1 text-xs text-slate-500">
+                {moveTimeLimitSeconds ? `提醒阈值：${moveTimeLimitSeconds} 秒，仅提示不判负。` : '提醒阈值：不限时间。'}
+              </p>
             </div>
             <div className="mt-4 rounded-lg bg-slate-950 p-4 text-amber-100 shadow-stone">
               <p className="text-sm">{message}</p>

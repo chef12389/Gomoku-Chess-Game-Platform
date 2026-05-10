@@ -45,6 +45,7 @@ export interface GameRecord {
   moves: Move[];
   createdAt: string;
   durationSeconds: number;
+  moveTimeLimitSeconds?: number | null;
 }
 
 export interface OnlineRoom {

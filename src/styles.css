@@ -15,10 +15,10 @@ body {
   min-width: 320px;
   overflow-x: hidden;
   background:
-    radial-gradient(ellipse at 12% -8%, rgba(252, 211, 77, .34), transparent 34rem),
-    radial-gradient(ellipse at 88% 8%, rgba(45, 212, 191, .24), transparent 32rem),
-    radial-gradient(ellipse at 52% 92%, rgba(148, 163, 184, .28), transparent 34rem),
-    linear-gradient(135deg, #f8fafc 0%, #edf4f1 48%, #f7f0df 100%);
+    radial-gradient(ellipse at 14% -10%, rgba(252, 211, 77, .18), transparent 32rem),
+    radial-gradient(ellipse at 88% 6%, rgba(45, 212, 191, .14), transparent 30rem),
+    radial-gradient(ellipse at 52% 92%, rgba(148, 163, 184, .18), transparent 32rem),
+    linear-gradient(135deg, #f8fafc 0%, #eef4f1 50%, #f6f0e5 100%);
   background-attachment: fixed;
 }
 
@@ -29,9 +29,9 @@ body::before {
   pointer-events: none;
   z-index: -1;
   background:
-    linear-gradient(115deg, rgba(255,255,255,.46), transparent 34%, rgba(255,255,255,.28) 62%, transparent),
-    radial-gradient(circle at 32% 24%, rgba(255,255,255,.7), transparent 18rem);
-  opacity: .78;
+    linear-gradient(115deg, rgba(255,255,255,.34), transparent 36%, rgba(255,255,255,.2) 66%, transparent),
+    repeating-linear-gradient(0deg, rgba(15,23,42,.018) 0 1px, transparent 1px 4px);
+  opacity: .72;
 }
 
 button,
@@ -52,9 +52,9 @@ button:disabled {
 .app-shell {
   @apply relative min-h-dvh overflow-hidden text-slate-950;
   background:
-    linear-gradient(120deg, rgba(255,255,255,.64), rgba(255,255,255,.18) 24%, rgba(20,184,166,.12) 42%, rgba(252,211,77,.15) 66%, rgba(255,255,255,.54)),
-    radial-gradient(ellipse at 18% 0%, rgba(252, 211, 77, .22), transparent 30rem),
-    radial-gradient(ellipse at 84% 12%, rgba(20, 184, 166, .18), transparent 28rem),
+    linear-gradient(120deg, rgba(255,255,255,.58), rgba(255,255,255,.18) 30%, rgba(20,184,166,.08) 48%, rgba(252,211,77,.09) 70%, rgba(255,255,255,.5)),
+    radial-gradient(ellipse at 18% 0%, rgba(252, 211, 77, .12), transparent 28rem),
+    radial-gradient(ellipse at 84% 12%, rgba(20, 184, 166, .1), transparent 26rem),
     linear-gradient(135deg, rgba(248,250,252,.76), rgba(241,245,249,.5));
 }
 
@@ -70,7 +70,7 @@ button:disabled {
   top: 7rem;
   width: 24rem;
   height: 24rem;
-  background: rgba(251, 191, 36, .2);
+  background: rgba(251, 191, 36, .1);
   animation: liquid-drift 12s ease-in-out infinite alternate;
 }
 
@@ -79,7 +79,7 @@ button:disabled {
   bottom: -5rem;
   width: 30rem;
   height: 30rem;
-  background: rgba(45, 212, 191, .18);
+  background: rgba(45, 212, 191, .09);
   animation: liquid-drift 14s ease-in-out infinite alternate-reverse;
 }
 
@@ -99,21 +99,22 @@ button:disabled {
 }
 
 .panel {
-  @apply relative overflow-hidden rounded-lg border border-white/70 bg-white/[.5] shadow-glow backdrop-blur-2xl;
+  @apply relative overflow-hidden rounded-lg border border-white/80 bg-white/[.58] shadow-glow backdrop-blur-2xl;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.92),
-    inset 0 -1px 0 rgba(255,255,255,.34),
-    0 24px 80px rgba(30, 41, 59, .16);
+    inset 0 1px 0 rgba(255,255,255,.95),
+    inset 0 -1px 0 rgba(148,163,184,.22),
+    inset 0 0 0 1px rgba(255,255,255,.28),
+    0 18px 48px rgba(30, 41, 59, .13);
 }
 
 .panel::before {
   content: '';
   @apply pointer-events-none absolute inset-0;
   background:
-    linear-gradient(115deg, rgba(255,255,255,.62), transparent 26%, rgba(255,255,255,.18) 48%, transparent 72%),
-    radial-gradient(ellipse at 18% 0%, rgba(255,255,255,.52), transparent 18rem);
+    linear-gradient(115deg, rgba(255,255,255,.5), transparent 28%, rgba(255,255,255,.14) 54%, transparent 78%),
+    repeating-linear-gradient(90deg, rgba(15,23,42,.018) 0 1px, transparent 1px 5px);
   mix-blend-mode: screen;
-  opacity: .58;
+  opacity: .5;
 }
 
 .panel > * {
@@ -290,6 +291,10 @@ button:disabled {
   box-shadow: inset 0 1px 0 rgba(255,255,255,.76);
 }
 
+.segmented-5 {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
 .segmented button {
   @apply min-h-10 rounded-md text-sm font-semibold text-slate-600 transition hover:bg-white/50 hover:text-slate-900;
 }
@@ -317,6 +322,8 @@ button:disabled {
 .board-case {
   @apply relative mx-auto w-full max-w-[820px] rounded-[10px] p-4 shadow-glow;
   background:
+    linear-gradient(90deg, rgba(255,255,255,.06) 0 1px, transparent 1px 18px),
+    linear-gradient(0deg, rgba(0,0,0,.08) 0 1px, transparent 1px 22px),
     linear-gradient(135deg, #442713 0%, #7a451e 22%, #b36b2d 48%, #673516 78%, #2b170d 100%);
   box-shadow:
     inset 0 2px 0 rgba(255, 236, 190, .35),
@@ -327,6 +334,10 @@ button:disabled {
 .board-case::before {
   content: '';
   @apply pointer-events-none absolute inset-[9px] rounded-[8px] border border-amber-100/20;
+}
+
+.board-readonly {
+  max-width: 680px;
 }
 
 .board-shell {
@@ -500,6 +511,18 @@ button:disabled {
     0 14px 26px rgba(35, 21, 10, .18);
 }
 
+.stone::after {
+  content: '';
+  position: absolute;
+  inset: 15% 18% auto auto;
+  width: 30%;
+  height: 22%;
+  border-radius: 999px;
+  background: rgba(255,255,255,.18);
+  filter: blur(1px);
+  transform: rotate(-18deg);
+}
+
 .stone.black {
   background:
     radial-gradient(circle at 30% 24%, #4b4b4b 0%, #151515 22%, #050505 56%, #000 100%);
@@ -575,7 +598,7 @@ button:disabled {
 }
 
 .record-row {
-  @apply flex w-full flex-col items-start gap-1 px-5 py-4 text-left transition hover:bg-white/55;
+  @apply flex w-full flex-col items-start gap-1 border-b border-white/45 px-5 py-4 text-left transition hover:bg-white/55;
 }
 
 .record-row.active {
@@ -584,6 +607,47 @@ button:disabled {
 
 .record-row.active span {
   @apply text-amber-100;
+}
+
+.records-layout {
+  display: grid;
+  grid-template-columns: minmax(300px, 420px) minmax(0, 1fr);
+  gap: 1.5rem;
+}
+
+.records-list {
+  max-height: calc(100dvh - 180px);
+  overflow: auto;
+}
+
+.replay-panel .board-case {
+  box-shadow:
+    inset 0 2px 0 rgba(255, 236, 190, .32),
+    inset 0 -8px 18px rgba(31, 16, 8, .42),
+    0 18px 52px rgba(15, 23, 42, .18);
+}
+
+.replay-step-badge {
+  @apply rounded-lg border border-white/70 bg-slate-950 px-4 py-2 text-sm font-semibold text-amber-100 shadow-sm;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.16), 0 12px 28px rgba(15,23,42,.16);
+}
+
+.replay-toolbar {
+  @apply grid items-center gap-2;
+  grid-template-columns: auto auto minmax(120px, 1fr) auto auto;
+}
+
+.replay-progress {
+  @apply h-3 overflow-hidden rounded-full border border-white/70 bg-white/50;
+  box-shadow: inset 0 1px 3px rgba(15,23,42,.12);
+}
+
+.replay-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #0f172a, #d97706);
+  transition: width .22s ease;
 }
 
 @keyframes liquid-flow {
@@ -647,6 +711,27 @@ button:disabled {
   .secondary-button,
   .danger-button {
     @apply justify-center;
+  }
+
+  .records-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .records-list {
+    max-height: 360px;
+  }
+
+  .replay-toolbar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .replay-progress {
+    grid-column: 1 / -1;
+    order: -1;
+  }
+
+  .segmented-5 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 

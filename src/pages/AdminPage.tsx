@@ -87,7 +87,7 @@ export function AdminPage() {
                   <td><button className="icon-button" onClick={() => remove(record.id)} aria-label="删除对局"><Trash2 size={16} /></button></td>
                 </tr>
               ))}
-              {records.length === 0 && <tr><td colSpan={6}>暂无对局记录。对局结束会自动保存，也可以在棋盘页手动保存。</td></tr>}
+              {records.length === 0 && <tr><td colSpan={6}>暂无对局记录。对局结束后会自动保存。</td></tr>}
             </tbody>
           </table>
         </div>

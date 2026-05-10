@@ -9,10 +9,11 @@ interface BoardProps {
   winningLine: Point[];
   suggestedPoints?: Array<Point & { label?: string; color?: Stone }>;
   disabled?: boolean;
-  onPlace: (point: Point) => void;
+  readOnly?: boolean;
+  onPlace?: (point: Point) => void;
 }
 
-export function Board({ board, nextColor, moves, winningLine, suggestedPoints = [], disabled, onPlace }: BoardProps) {
+export function Board({ board, nextColor, moves, winningLine, suggestedPoints = [], disabled, readOnly, onPlace }: BoardProps) {
   const [pendingPoint, setPendingPoint] = useState<Point | null>(null);
   const last = moves[moves.length - 1];
   const winning = new Set(winningLine.map(pointKey));
@@ -35,7 +36,7 @@ export function Board({ board, nextColor, moves, winningLine, suggestedPoints = 
   }, [moves.length, disabled]);
 
   const confirmPendingPlace = () => {
-    if (!pendingPoint || disabled) return;
+    if (!pendingPoint || disabled || readOnly || !onPlace) return;
     const cell = board[pendingPoint.row][pendingPoint.col];
     if (cell) {
       setPendingPoint(null);
@@ -47,7 +48,7 @@ export function Board({ board, nextColor, moves, winningLine, suggestedPoints = 
   };
 
   const handlePlace = (point: Point, occupied: boolean) => {
-    if (disabled || occupied) return;
+    if (disabled || readOnly || occupied || !onPlace) return;
     if (!isCoarsePointer) {
       onPlace(point);
       return;
@@ -56,7 +57,7 @@ export function Board({ board, nextColor, moves, winningLine, suggestedPoints = 
   };
 
   return (
-    <div className="board-case">
+    <div className={`board-case ${readOnly ? 'board-readonly' : ''}`}>
       <div className="board-shell">
         <div className="board-coords top" aria-hidden="true">
           {letters.map((letter) => <span key={letter}>{letter}</span>)}
@@ -101,10 +102,10 @@ export function Board({ board, nextColor, moves, winningLine, suggestedPoints = 
             return (
               <button
                 key={`${row}-${col}`}
-                className={`board-cell ${isPending ? 'board-cell-pending' : ''} ${disabled ? 'cursor-not-allowed' : ''}`}
+                className={`board-cell ${isPending ? 'board-cell-pending' : ''} ${disabled || readOnly ? 'cursor-not-allowed' : ''}`}
                 style={{ left: `${(col / (BOARD_SIZE - 1)) * 100}%`, top: `${(row / (BOARD_SIZE - 1)) * 100}%` }}
                 onClick={() => handlePlace({ row, col }, Boolean(cell))}
-                disabled={disabled || Boolean(cell)}
+                disabled={disabled || readOnly || Boolean(cell)}
                 aria-label={`${row + 1} 行 ${col + 1} 列${cell ? ` ${cell === 'black' ? '黑棋' : '白棋'}` : ' 空位'}`}
               >
                 {suggestion && !cell && (
@@ -134,7 +135,7 @@ export function Board({ board, nextColor, moves, winningLine, suggestedPoints = 
                     </span>
                   </span>
                 )}
-                {!cell && !disabled && <span className={`ghost-stone ${nextColor}`} />}
+                {!cell && !disabled && !readOnly && <span className={`ghost-stone ${nextColor}`} />}
                 {cell && (
                   <span className={`stone ${cell} ${isLast ? 'last-stone' : ''} ${isWin ? 'win-stone' : ''}`}>
                     {isLast && <span className="last-dot" />}
