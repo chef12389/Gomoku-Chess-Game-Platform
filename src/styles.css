@@ -278,6 +278,14 @@ button:disabled {
   @apply mr-auto border border-white/70 bg-white/[.68] text-slate-500 backdrop-blur-xl;
 }
 
+.chat-bubble.system {
+  @apply mx-auto max-w-full border border-amber-200/80 bg-amber-50/80 text-amber-900;
+}
+
+.chat-bubble.system p {
+  @apply text-amber-900;
+}
+
 .empty-chat {
   @apply rounded-lg border border-dashed border-white/70 bg-white/[.34] px-3 py-6 text-center text-sm text-slate-500;
 }

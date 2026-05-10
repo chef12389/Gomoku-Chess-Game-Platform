@@ -72,6 +72,9 @@ export interface OnlineChatMessage {
   sender_email: string | null;
   sender_color: Stone;
   text: string;
+  kind?: 'chat' | 'undo-request' | 'undo-accepted' | 'undo-rejected';
+  undo_request_id?: string;
+  target_move_count?: number;
   created_at: string;
 }
 

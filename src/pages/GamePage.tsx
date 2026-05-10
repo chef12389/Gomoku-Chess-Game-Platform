@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Bell, Bot, Clock3, LogOut, MessageCircle, Play, RotateCcw, Send, ShieldAlert, Sparkles, Undo2, Users, Volume2, VolumeX, Wifi } from 'lucide-react';
+import { Bell, Bot, Clock3, LogOut, MessageCircle, Music, Play, RotateCcw, Send, ShieldAlert, Sparkles, Undo2, Users, Volume2, VolumeX, Wifi } from 'lucide-react';
 import { Board } from '../components/Board';
 import { ConfigNotice } from '../components/ConfigNotice';
 import { useAuth } from '../hooks/useAuth';
@@ -36,6 +36,8 @@ const AI_DIFFICULTY_OPTIONS: Array<{ id: AiDifficulty; label: string; depth: num
 ];
 const MOVE_TIME_LIMIT_OPTIONS = [0, 15, 30, 60, 120];
 const soundStorageKey = 'renju.sound.enabled';
+const musicStorageKey = 'renju.music.enabled';
+const backgroundMusicPath = '/music/background.ogg';
 
 const colorText = (color: Stone) => (color === 'black' ? '黑方' : '白方');
 const colorShort = (color: Stone) => (color === 'black' ? '黑' : '白');
@@ -115,6 +117,10 @@ export function GamePage() {
     if (typeof window === 'undefined') return true;
     return localStorage.getItem(soundStorageKey) !== 'false';
   });
+  const [musicEnabled, setMusicEnabled] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem(musicStorageKey) === 'true';
+  });
   const [nCount, setNCount] = useState(3);
   const [nCandidates, setNCandidates] = useState<Point[]>([]);
   const [aiThinking, setAiThinking] = useState(false);
@@ -125,6 +131,7 @@ export function GamePage() {
   const aiJobIdRef = useRef(0);
   const aiFallbackTimerRef = useRef<number | null>(null);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
+  const musicRef = useRef<HTMLAudioElement | null>(null);
   const autoSavedRecordKeyRef = useRef<string | null>(null);
 
   const isCustomOpening = activeOpeningId === CUSTOM_OPENING_ID;
@@ -183,6 +190,24 @@ export function GamePage() {
   }, [soundEnabled]);
 
   useEffect(() => {
+    localStorage.setItem(musicStorageKey, musicEnabled ? 'true' : 'false');
+    if (!musicRef.current) {
+      musicRef.current = new Audio(backgroundMusicPath);
+      musicRef.current.loop = true;
+      musicRef.current.volume = 0.35;
+    }
+    const music = musicRef.current;
+    if (musicEnabled) {
+      void music.play().catch(() => {
+        setMusicEnabled(false);
+        setMessage(`未找到或无法播放背景音乐，请将文件放到 public/music/background.ogg 后再开启。`);
+      });
+    } else {
+      music.pause();
+    }
+  }, [musicEnabled]);
+
+  useEffect(() => {
     setCurrentTurnSeconds(0);
     setTurnAlerted(false);
   }, [nextColor, moves.length, screen]);
@@ -219,6 +244,26 @@ export function GamePage() {
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ block: 'end' });
   }, [onlineChatMessages.length]);
+
+  const pendingUndoRequest = useMemo(() => {
+    if (!onlineRoom) return null;
+    const answered = new Set(
+      onlineChatMessages
+        .filter((item) => (item.kind === 'undo-accepted' || item.kind === 'undo-rejected') && item.undo_request_id)
+        .map((item) => item.undo_request_id),
+    );
+    return [...onlineChatMessages]
+      .reverse()
+      .find((item) => item.kind === 'undo-request' && item.undo_request_id && !answered.has(item.undo_request_id) && item.sender_color !== onlineMyColor) || null;
+  }, [onlineChatMessages, onlineMyColor, onlineRoom]);
+
+  const rebuildBoardFromMoves = (targetMoves: Move[]) => {
+    const nextBoard = createBoard();
+    targetMoves.forEach((move) => {
+      nextBoard[move.row][move.col] = move.color;
+    });
+    return nextBoard;
+  };
 
   const resetBoard = () => {
     setBoard(createBoard());
@@ -605,6 +650,10 @@ export function GamePage() {
 
   const undo = () => {
     if (moves.length === 0 || aiThinking) return;
+    if (playerMode === 'online') {
+      void requestOnlineUndo();
+      return;
+    }
     const removeCount = playerMode === 'ai' && moves.length >= 2 ? 2 : 1;
     const kept = moves.slice(0, Math.max(0, moves.length - removeCount));
     const nextBoard = createBoard();
@@ -618,6 +667,60 @@ export function GamePage() {
     setResult({ winner: null, line: [] });
     setNCandidates([]);
     setMessage('已悔棋。');
+  };
+
+  const requestOnlineUndo = async () => {
+    if (!onlineRoom || moves.length === 0 || chatSending) return;
+    setChatError('');
+    const requestId = `undo-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    try {
+      const chatMessages = await sendOnlineRoomMessage(onlineRoom.id, {
+        sender_id: user?.id && user.id !== 'local-admin' ? user.id : null,
+        sender_email: user?.email || '访客',
+        sender_color: onlineMyColor,
+        text: `${onlineMyColor === 'black' ? '黑方' : '白方'}申请悔棋，等待对方同意。`,
+        kind: 'undo-request',
+        undo_request_id: requestId,
+        target_move_count: moves.length,
+      });
+      setOnlineRoom((room) => (room ? { ...room, chat_messages: chatMessages } : room));
+      setMessage('已发送悔棋申请，等待对方同意。');
+    } catch (err) {
+      setChatError(err instanceof Error ? err.message : '悔棋申请发送失败。');
+    }
+  };
+
+  const respondOnlineUndo = async (accepted: boolean) => {
+    if (!onlineRoom || !pendingUndoRequest) return;
+    setChatError('');
+    try {
+      let nextRoom = onlineRoom;
+      if (accepted) {
+        const targetCount = Math.max(0, (pendingUndoRequest.target_move_count ?? moves.length) - 1);
+        const kept = moves.slice(0, targetCount);
+        const nextBoard = rebuildBoardFromMoves(kept);
+        const nextTurn = kept.length ? opponent(kept[kept.length - 1].color) : 'black';
+        await updateOnlineRoomMove(onlineRoom, nextBoard, kept, nextTurn, null);
+        setBoard(nextBoard);
+        setMoves(kept);
+        setNextColor(nextTurn);
+        setPhase('playing');
+        setResult({ winner: null, line: [] });
+        nextRoom = { ...onlineRoom, board: nextBoard, moves: kept, next_color: nextTurn, winner: null, status: 'playing' };
+      }
+      const chatMessages = await sendOnlineRoomMessage(onlineRoom.id, {
+        sender_id: user?.id && user.id !== 'local-admin' ? user.id : null,
+        sender_email: user?.email || '访客',
+        sender_color: onlineMyColor,
+        text: accepted ? '已同意悔棋，棋局已回退一步。' : '已拒绝悔棋申请。',
+        kind: accepted ? 'undo-accepted' : 'undo-rejected',
+        undo_request_id: pendingUndoRequest.undo_request_id,
+      });
+      setOnlineRoom({ ...nextRoom, chat_messages: chatMessages });
+      setMessage(accepted ? '悔棋已生效，棋局回退一步。' : '已拒绝对方悔棋申请。');
+    } catch (err) {
+      setChatError(err instanceof Error ? err.message : '处理悔棋申请失败。');
+    }
   };
 
   const buildGameRecord = (): GameRecord | null => {
@@ -833,6 +936,11 @@ export function GamePage() {
               {soundEnabled ? <Volume2 size={17} /> : <VolumeX size={17} />}
               {soundEnabled ? '音效开启' : '音效关闭'}
             </button>
+            <button type="button" className="secondary-button mt-3 w-full justify-center" onClick={() => setMusicEnabled((value) => !value)}>
+              <Music size={17} />
+              {musicEnabled ? '背景音乐开启' : '背景音乐关闭'}
+            </button>
+            <p className="mt-2 text-xs leading-5 text-slate-500">音乐文件目录：public/music/background.ogg</p>
             <button className="secondary-button mt-3 w-full justify-center" onClick={() => setScreen('setup')}>返回设置</button>
             <button className="secondary-button mt-3 w-full justify-center" onClick={() => setScreen('home')}>返回首页</button>
             {playerMode === 'online' && onlineRoom && (
@@ -845,12 +953,23 @@ export function GamePage() {
           {playerMode === 'online' && (
             <div className="panel liquid-chat p-5">
               <h2 className="section-title"><MessageCircle size={18} />实时互动</h2>
+              {pendingUndoRequest && (
+                <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50/80 p-3 text-sm text-amber-900">
+                  <p className="font-semibold">对方申请悔棋</p>
+                  <p className="mt-1">同意后棋局将回退一步。</p>
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    <button className="primary-button justify-center" onClick={() => void respondOnlineUndo(true)}>同意</button>
+                    <button className="secondary-button justify-center" onClick={() => void respondOnlineUndo(false)}>拒绝</button>
+                  </div>
+                </div>
+              )}
               <div className="chat-stream mt-4" aria-live="polite">
                 {onlineChatMessages.length ? (
                   onlineChatMessages.map((item) => {
                     const mine = item.sender_color === onlineMyColor && item.sender_email === (user?.email || '访客');
+                    const systemMessage = item.kind && item.kind !== 'chat';
                     return (
-                      <div key={item.id} className={`chat-bubble ${mine ? 'mine' : 'theirs'}`}>
+                      <div key={item.id} className={`chat-bubble ${systemMessage ? 'system' : mine ? 'mine' : 'theirs'}`}>
                         <div className="flex items-center justify-between gap-3 text-[11px] font-semibold">
                           <span>{item.sender_color === 'black' ? '黑方' : '白方'} · {item.sender_email || '访客'}</span>
                           <time>{new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time>

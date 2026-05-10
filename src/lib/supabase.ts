@@ -296,6 +296,7 @@ export async function sendOnlineRoomMessage(
     ...message,
     id: makeId(),
     text: message.text.trim().slice(0, 180),
+    kind: message.kind || 'chat',
     created_at: new Date().toISOString(),
   };
   const chatMessages = [...(latest.chat_messages || []), nextMessage].slice(-80);
