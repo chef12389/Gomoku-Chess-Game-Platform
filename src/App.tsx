@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BarChart3, BookOpen, Crown, LogIn, LogOut, Swords, UserRound } from 'lucide-react';
 import { useAuth } from './hooks/useAuth';
 import { signOut } from './lib/supabase';
@@ -17,14 +17,40 @@ const nav = [
 ] as const;
 
 export default function App() {
-  const [view, setView] = useState<View>('game');
-  const { user, isAdmin, refresh } = useAuth();
+  const [view, setView] = useState<View>('auth');
+  const [hasEntered, setHasEntered] = useState(false);
+  const { user, isAdmin, loading, refresh } = useAuth();
+
+  useEffect(() => {
+    if (!loading && user) {
+      setHasEntered(true);
+      setView('game');
+    }
+  }, [loading, user]);
 
   const logout = async () => {
     await signOut();
     await refresh();
+    setHasEntered(false);
+    setView('auth');
+  };
+
+  const enterHome = () => {
+    setHasEntered(true);
     setView('game');
   };
+
+  const canUseApp = hasEntered || Boolean(user);
+
+  if (!canUseApp) {
+    return (
+      <div className="app-shell">
+        <main className="relative z-10 mx-auto max-w-7xl px-6 py-8 max-md:px-3 max-md:py-4">
+          <AuthPage onDone={enterHome} />
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="app-shell">
@@ -77,7 +103,7 @@ export default function App() {
         {view === 'game' && <GamePage />}
         {view === 'records' && <RecordsPage />}
         {view === 'user' && <UserPage onLogin={() => setView('auth')} />}
-        {view === 'auth' && <AuthPage onDone={() => setView('game')} />}
+        {view === 'auth' && <AuthPage onDone={enterHome} />}
         {view === 'admin' && <AdminPage />}
       </main>
     </div>

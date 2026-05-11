@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Bell, Bot, Clock3, LogOut, MessageCircle, Music, Play, RotateCcw, Send, ShieldAlert, Sparkles, Undo2, Users, Volume2, VolumeX, Wifi } from 'lucide-react';
+import { Bell, Bot, Clock3, HelpCircle, LogOut, MessageCircle, Music, Play, RotateCcw, Send, ShieldAlert, Sparkles, Undo2, Users, Volume2, VolumeX, Wifi, ZoomIn, ZoomOut } from 'lucide-react';
 import { Board } from '../components/Board';
 import { ConfigNotice } from '../components/ConfigNotice';
 import { useAuth } from '../hooks/useAuth';
@@ -8,9 +8,7 @@ import { applyMove, CENTER, createBoard, detectForbidden, evaluateTerminal, oppo
 import {
   createNMoveCandidates,
   isBadOpening,
-  isBalancedOpening,
   isInBlackThreeZone,
-  openingStrategyLabel,
   OPENINGS,
   recommendNForOpponent,
   recommendNForSide,
@@ -121,6 +119,8 @@ export function GamePage() {
     if (typeof window === 'undefined') return false;
     return localStorage.getItem(musicStorageKey) === 'true';
   });
+  const [showRuleHelp, setShowRuleHelp] = useState(false);
+  const [boardZoom, setBoardZoom] = useState(1);
   const [nCount, setNCount] = useState(3);
   const [nCandidates, setNCandidates] = useState<Point[]>([]);
   const [aiThinking, setAiThinking] = useState(false);
@@ -200,7 +200,7 @@ export function GamePage() {
     if (musicEnabled) {
       void music.play().catch(() => {
         setMusicEnabled(false);
-        setMessage(`未找到或无法播放背景音乐，请将文件放到 public/music/background.ogg 后再开启。`);
+        setMessage('未找到或无法播放背景音乐，请检查背景音乐文件后再开启。');
       });
     } else {
       music.pause();
@@ -427,7 +427,7 @@ export function GamePage() {
       setMessage('前三手已完成，白方拥有三手交换权。');
     } else if (mode === 'standard' && move.index === 4) {
       setPhase('n-move');
-      setMessage(`进入五手 N 打：黑方需要放置 ${nCount} 个候选黑 5。`);
+      setMessage(`黑方请选择 ${nCount} 个候选点。`);
     } else {
       setMessage(`${colorText(after)}行棋。`);
     }
@@ -569,11 +569,7 @@ export function GamePage() {
           setPhase('playing');
           const point = chooseStrongWhiteFourth();
           commitMove(point, 'white');
-          setMessage(
-            openingName && isBalancedOpening(openingName)
-              ? `AI 面对平衡开局选择不交换，并已落下白 4。进入五手 N 打：黑方需要放置 ${nCount} 个候选黑 5。`
-              : `AI 判断不交换，并已落下白 4。进入五手 N 打：黑方需要放置 ${nCount} 个候选黑 5。`,
-          );
+          setMessage(`AI 判断不交换，并已落下白 4。黑方请选择 ${nCount} 个候选点。`);
         }
       }, 450);
       return () => window.clearTimeout(id);
@@ -759,11 +755,36 @@ export function GamePage() {
     </div>
   );
 
-  const nMovePrompt = phase === 'n-move'
-    ? nextColor === 'black'
-      ? `五手 N 打开始：请黑方在棋盘上选择第 ${nCandidates.length + 1} / ${nCount} 个黑 5 候选点。`
-      : `五手 N 打选择：请白方从 ${nCandidates.length} 个候选点中保留 1 个作为正式黑 5。`
-    : '';
+  const statusLabel = result.reason
+    ? result.winner
+      ? `${colorText(result.winner)}获胜`
+      : '平局'
+    : aiThinking
+      ? 'AI 思考中'
+      : playerMode === 'online' && onlineRoom?.status === 'waiting'
+        ? '等待对手加入'
+        : playerMode === 'online'
+          ? isOnlineMyTurn ? '轮到你落子' : '等待对手'
+          : phase === 'swap-offer'
+            ? '处理交换权'
+            : phase === 'n-move'
+              ? nextColor === 'black' ? '黑方选择候选点' : '白方保留候选点'
+              : `${colorText(nextColor)}行棋`;
+
+  const statusTone = result.reason
+    ? 'finished'
+    : aiThinking || (playerMode === 'online' && !isOnlineMyTurn)
+      ? 'waiting'
+      : 'active';
+
+  const ruleHelpItems = [
+    '黑棋先行，任一方连成五子即获胜。',
+    '黑棋禁手实时判定，白棋不受禁手限制。',
+    '指定开局会先完成前三手，白方可选择是否交换。',
+    '候选点阶段按棋盘标记选择即可，默认界面不展示长说明。',
+  ];
+
+  const boardZoomPercent = Math.round(boardZoom * 100);
 
   if (screen === 'home') {
     return (
@@ -774,9 +795,6 @@ export function GamePage() {
             <div>
               <p className="text-sm font-semibold tracking-[.24em] text-amber-200/80">RENJU ARENA</p>
               <h1 className="mt-5 font-serif text-6xl font-semibold leading-tight max-md:text-4xl">欢迎来到五子棋对弈平台</h1>
-              <p className="mt-5 max-w-2xl text-base leading-8 text-amber-100/80">
-                支持指定开局自动摆子、自定义前三手、三手交换、五手 N 打与禁手判定。
-              </p>
             </div>
           </div>
         </div>
@@ -802,7 +820,6 @@ export function GamePage() {
   }
 
   if (screen === 'setup') {
-    const selectedOpening = OPENINGS.find((item) => item.id === openingId) || selectBalancedOpening();
     return (
       <section className="space-y-6 animate-panel-in">
         <ConfigNotice />
@@ -864,19 +881,16 @@ export function GamePage() {
                 <div className="glass-card max-lg:col-span-2 max-md:col-span-1">
                   <label className="form-label">开局策略</label>
                   {playerMode === 'ai' && humanSide === 'white' ? (
-                    <p className="mt-2 text-sm leading-6 text-slate-600">你执白时，AI 会从疏星、瑞星、丘月、松月、斜月中选择平衡开局并直接摆好前三手。</p>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">由 AI 自动选择。</p>
                   ) : (
                     <select className="field" value={openingId} onChange={(event) => setOpeningId(event.target.value)}>
                       <option value={CUSTOM_OPENING_ID}>自定义开局</option>
                       {OPENINGS.map((item) => (
                         <option key={item.id} value={item.id}>
-                          {item.name} · {openingStrategyLabel(item.name)}
+                          {item.name}
                         </option>
                       ))}
                     </select>
-                  )}
-                  {!(playerMode === 'ai' && humanSide === 'white') && openingId !== CUSTOM_OPENING_ID && (
-                    <p className="mt-2 text-sm text-slate-600">当前选择：{selectedOpening.name} · {openingStrategyLabel(selectedOpening.name)}</p>
                   )}
                 </div>
                 <div className="glass-card">
@@ -886,7 +900,6 @@ export function GamePage() {
                     <button onClick={() => { setOpponentStrength('normal'); setNCount(recommendNForOpponent('normal')); }}>稳健 N=3</button>
                     <button onClick={() => { setOpponentStrength('strong'); setNCount(recommendNForOpponent('strong')); }}>强手 N=4</button>
                   </div>
-                  <p className="mt-2 text-xs leading-5 text-slate-500">策略建议：执黑首选 2 打，执白首选 5 打，求平衡选 3 打。</p>
                 </div>
               </>
             )}
@@ -909,10 +922,10 @@ export function GamePage() {
   }
 
   return (
-    <section className="animate-panel-in">
+    <section className="game-screen animate-panel-in">
       <ConfigNotice />
-      <div className="mb-6 grid grid-cols-[minmax(0,1fr)_360px] gap-6 max-lg:grid-cols-1 max-md:gap-4">
-        <div className="panel p-5">
+      <div className="game-layout mb-6 grid grid-cols-[minmax(0,1fr)_360px] gap-6 max-lg:grid-cols-1 max-md:gap-4">
+        <div className="panel board-panel p-5">
           <div className="mb-5 flex items-center justify-between gap-4 max-md:flex-col max-md:items-start">
             <div>
               <h1 className="font-serif text-3xl font-semibold">五子棋对弈</h1>
@@ -927,7 +940,32 @@ export function GamePage() {
               <button className="secondary-button" onClick={startGame}><RotateCcw size={17} />重开</button>
             </div>
           </div>
-          <Board board={board} nextColor={nextColor} moves={moves} winningLine={result.line} suggestedPoints={suggestedPoints} disabled={phase === 'finished'} onPlace={place} />
+          <div className={`turn-status ${statusTone}`}>
+            <div>
+              <span>当前状态</span>
+              <strong>{statusLabel}</strong>
+            </div>
+            <p>{message}</p>
+          </div>
+          <div className="board-toolbar">
+            <div className="board-toolbar-info">
+              <span>棋盘缩放</span>
+              <strong>{boardZoomPercent}%</strong>
+            </div>
+            <div className="flex gap-2">
+              <button className="icon-button" type="button" aria-label="缩小棋盘" onClick={() => setBoardZoom((value) => Math.max(0.9, Number((value - 0.1).toFixed(1))))}>
+                <ZoomOut size={17} />
+              </button>
+              <button className="icon-button" type="button" aria-label="放大棋盘" onClick={() => setBoardZoom((value) => Math.min(1.2, Number((value + 0.1).toFixed(1))))}>
+                <ZoomIn size={17} />
+              </button>
+            </div>
+          </div>
+          <div className="board-viewport">
+            <div className="board-scale-frame" style={{ width: `${boardZoomPercent}%`, ['--board-mobile-width' as string]: `${Math.round(640 * boardZoom)}px` }}>
+              <Board board={board} nextColor={nextColor} moves={moves} winningLine={result.line} suggestedPoints={suggestedPoints} disabled={phase === 'finished'} onPlace={place} />
+            </div>
+          </div>
         </div>
         <aside className="space-y-4">
           <div className="panel p-5">
@@ -940,7 +978,6 @@ export function GamePage() {
               <Music size={17} />
               {musicEnabled ? '背景音乐开启' : '背景音乐关闭'}
             </button>
-            <p className="mt-2 text-xs leading-5 text-slate-500">音乐文件目录：public/music/background.ogg</p>
             <button className="secondary-button mt-3 w-full justify-center" onClick={() => setScreen('setup')}>返回设置</button>
             <button className="secondary-button mt-3 w-full justify-center" onClick={() => setScreen('home')}>返回首页</button>
             {playerMode === 'online' && onlineRoom && (
@@ -948,6 +985,19 @@ export function GamePage() {
                 <LogOut size={17} />
                 离开房间
               </button>
+            )}
+          </div>
+          <div className="panel p-5">
+            <button type="button" className="rule-help-toggle" onClick={() => setShowRuleHelp((value) => !value)} aria-expanded={showRuleHelp}>
+              <span className="section-title"><HelpCircle size={18} />规则帮助</span>
+              <span>{showRuleHelp ? '收起' : '展开'}</span>
+            </button>
+            {showRuleHelp && (
+              <div className="rule-help-body">
+                {ruleHelpItems.map((item) => (
+                  <p key={item}>{item}</p>
+                ))}
+              </div>
             )}
           </div>
           {playerMode === 'online' && (
@@ -1022,7 +1072,6 @@ export function GamePage() {
             </div>
             <div className="mt-4 rounded-lg bg-slate-950 p-4 text-amber-100 shadow-stone">
               <p className="text-sm">{message}</p>
-              {nMovePrompt && <p className="mt-2 text-sm font-semibold text-amber-200">{nMovePrompt}</p>}
               {aiThinking && (
                 <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/15">
                   <div className="ai-progress-bar h-full rounded-full transition-all duration-300" style={{ width: `${aiProgress}%` }} />
@@ -1041,17 +1090,6 @@ export function GamePage() {
                 <button className="secondary-button justify-center" onClick={() => continueWithoutSwap()}>继续白 4</button>
               </div>
             )}
-            {phase === 'n-move' && (
-              <div className="mt-4 rounded-lg border border-slate-200 bg-white/70 p-3 text-sm">
-                <p className="font-semibold text-slate-800">
-                  {nextColor === 'black'
-                    ? `五手 N 打：黑方继续放置候选点 ${nCandidates.length + 1} / ${nCount}`
-                    : '五手 N 打：白方从候选点中保留一个'}
-                </p>
-                <p>黑 5 候选点：{formatBoardPoints(nCandidates)}</p>
-                <p className="mt-1 text-slate-500">白方从候选点中保留一个，其余移除。</p>
-              </div>
-            )}
             <div className="mt-4 flex items-center gap-2 text-sm text-slate-600">
               <ShieldAlert size={16} />
               黑棋禁手实时判定，白棋无禁手。
@@ -1062,6 +1100,15 @@ export function GamePage() {
             <p className="mt-3 max-h-36 overflow-auto rounded-lg bg-white/60 p-3 font-mono text-xs leading-6 text-slate-700">{moves.length ? serializeMoves(moves) : '暂无落子'}</p>
           </div>
         </aside>
+      </div>
+      <div className="mobile-action-bar">
+        <div>
+          <span>{statusLabel}</span>
+          <strong>{formatTime(currentTurnSeconds)}</strong>
+        </div>
+        <button type="button" onClick={undo} aria-label="悔棋"><Undo2 size={18} /></button>
+        <button type="button" onClick={startGame} aria-label="重开"><RotateCcw size={18} /></button>
+        <button type="button" onClick={() => setShowRuleHelp((value) => !value)} aria-label="规则帮助"><HelpCircle size={18} /></button>
       </div>
     </section>
   );

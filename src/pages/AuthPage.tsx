@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { KeyRound, UserPlus } from 'lucide-react';
+import { KeyRound, UserPlus, UserRound } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { isSupabaseConfigured, signIn, signUp } from '../lib/supabase';
 import { ConfigNotice } from '../components/ConfigNotice';
@@ -45,6 +45,12 @@ export function AuthPage({ onDone }: { onDone: () => void }) {
           <div className="mt-8 rounded-lg border border-amber-200/20 p-4 text-sm text-amber-50/80">
             普通用户可以注册账号；管理员账号由系统内置识别。
           </div>
+          <button type="button" className="mt-5 w-full rounded-lg border border-amber-200/20 bg-amber-100 px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-amber-50" onClick={onDone}>
+            <span className="inline-flex items-center gap-2">
+              <UserRound size={17} />
+              游客登录
+            </span>
+          </button>
         </div>
         <form className="space-y-4 p-8" onSubmit={submit}>
           <div className="flex items-center gap-3">

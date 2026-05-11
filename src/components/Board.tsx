@@ -22,6 +22,7 @@ export function Board({ board, nextColor, moves, winningLine, suggestedPoints = 
     return window.matchMedia('(hover: none), (pointer: coarse)').matches;
   }, []);
   const letters = 'ABCDEFGHIJKLMNO'.split('');
+  const pendingLabel = pendingPoint ? `${letters[pendingPoint.col]}${pendingPoint.row + 1}` : '';
   const points = Array.from({ length: BOARD_SIZE }, (_, index) => (index / (BOARD_SIZE - 1)) * 100);
   const starPoints = [
     { row: 3, col: 3 },
@@ -58,6 +59,17 @@ export function Board({ board, nextColor, moves, winningLine, suggestedPoints = 
 
   return (
     <div className={`board-case ${readOnly ? 'board-readonly' : ''}`}>
+      {pendingPoint && !disabled && !readOnly && (
+        <div className="board-pending-toolbar" role="status" aria-live="polite">
+          <span>
+            预览落点 <strong>{pendingLabel}</strong>
+          </span>
+          <div className="flex gap-2">
+            <button type="button" onClick={() => setPendingPoint(null)}>取消</button>
+            <button type="button" className="primary" onClick={confirmPendingPlace}>确认</button>
+          </div>
+        </div>
+      )}
       <div className="board-shell">
         <div className="board-coords top" aria-hidden="true">
           {letters.map((letter) => <span key={letter}>{letter}</span>)}
