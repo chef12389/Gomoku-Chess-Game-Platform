@@ -4,17 +4,24 @@ import { useAuth } from '../hooks/useAuth';
 import { isSupabaseConfigured, signIn, signUp } from '../lib/supabase';
 import { ConfigNotice } from '../components/ConfigNotice';
 
+type AuthMode = 'login' | 'register' | 'guest';
+
 export function AuthPage({ onDone }: { onDone: () => void }) {
   const { refresh } = useAuth();
-  const [isRegister, setIsRegister] = useState(false);
+  const [mode, setMode] = useState<AuthMode>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const isRegister = mode === 'register';
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (mode === 'guest') {
+      onDone();
+      return;
+    }
     setError('');
     if (password.length < 6) {
       setError('密码至少 6 位。');
@@ -33,51 +40,75 @@ export function AuthPage({ onDone }: { onDone: () => void }) {
     }
   };
 
+  const authOptions: Array<{ id: AuthMode; title: string; desc: string; icon: typeof KeyRound }> = [
+    { id: 'login', title: '登录账号', desc: '同步棋谱与个人记录', icon: KeyRound },
+    { id: 'register', title: '注册账号', desc: '创建新的棋手身份', icon: UserPlus },
+    { id: 'guest', title: '游客进入', desc: '直接体验本地对弈', icon: UserRound },
+  ];
+
   return (
-    <section className="mx-auto max-w-3xl animate-panel-in">
+    <section className="auth-screen animate-panel-in">
       <ConfigNotice />
-      <div className="panel grid grid-cols-[.9fr_1.1fr] overflow-hidden max-md:grid-cols-1">
-        <div className="bg-slate-950 p-8 text-amber-100">
-          <h1 className="font-serif text-3xl font-semibold">账户入口</h1>
-          <p className="mt-4 text-sm leading-7 text-amber-100/[.78]">
-            登录后可保存棋谱、查看个人记录。管理员登录后会自动显示后台入口。
+      <div className="auth-hero">
+        <div>
+          <p className="text-sm font-semibold tracking-[.24em] text-amber-700">RENJU ARENA</p>
+          <h1 className="mt-4 font-serif text-5xl font-semibold leading-tight text-slate-950 max-md:text-4xl">进入弈境</h1>
+          <p className="mt-4 max-w-2xl text-base leading-8 text-slate-600">
+            选择一种身份开始对弈。登录和注册用于云端记录，游客模式适合快速体验。
           </p>
-          <div className="mt-8 rounded-lg border border-amber-200/20 p-4 text-sm text-amber-50/80">
-            普通用户可以注册账号；管理员账号由系统内置识别。
-          </div>
-          <button type="button" className="mt-5 w-full rounded-lg border border-amber-200/20 bg-amber-100 px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-amber-50" onClick={onDone}>
-            <span className="inline-flex items-center gap-2">
-              <UserRound size={17} />
-              游客登录
-            </span>
-          </button>
         </div>
-        <form className="space-y-4 p-8" onSubmit={submit}>
-          <div className="flex items-center gap-3">
-            {isRegister ? <UserPlus size={24} /> : <KeyRound size={24} />}
-            <h2 className="text-2xl font-semibold">{isRegister ? '注册账号' : '登录账号'}</h2>
-          </div>
-          {isRegister && (
-            <label className="form-label">
-              昵称
-              <input className="field" value={displayName} onChange={(event) => setDisplayName(event.target.value)} placeholder="棋手昵称" />
-            </label>
+      </div>
+
+      <div className="auth-card">
+        <div className="auth-mode-grid">
+          {authOptions.map((item) => {
+            const Icon = item.icon;
+            return (
+              <button key={item.id} type="button" className={`auth-mode-card ${mode === item.id ? 'active' : ''}`} onClick={() => { setMode(item.id); setError(''); }}>
+                <Icon size={22} />
+                <span>{item.title}</span>
+                <small>{item.desc}</small>
+              </button>
+            );
+          })}
+        </div>
+
+        <form className="auth-form" onSubmit={submit}>
+          {mode === 'guest' ? (
+            <div className="guest-panel">
+              <UserRound size={34} />
+              <div>
+                <h2>游客进入</h2>
+                <p>可体验人机、本地对弈和本机棋谱；登录后可使用云端保存、在线对弈和后台能力。</p>
+              </div>
+              <button type="submit" className="primary-button justify-center">进入首页</button>
+            </div>
+          ) : (
+            <>
+              <div className="auth-form-heading">
+                {isRegister ? <UserPlus size={24} /> : <KeyRound size={24} />}
+                <h2>{isRegister ? '注册账号' : '登录账号'}</h2>
+              </div>
+              {isRegister && (
+                <label className="form-label">
+                  昵称
+                  <input className="field" value={displayName} onChange={(event) => setDisplayName(event.target.value)} placeholder="棋手昵称" />
+                </label>
+              )}
+              <label className="form-label">
+                邮箱
+                <input className="field" type="email" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="name@example.com" />
+              </label>
+              <label className="form-label">
+                密码
+                <input className="field" type="password" required value={password} onChange={(event) => setPassword(event.target.value)} placeholder="至少 6 位" />
+              </label>
+              {error && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+              <button className="primary-button w-full justify-center" disabled={(!isSupabaseConfigured && isRegister) || loading}>
+                {loading ? '处理中...' : isRegister ? '创建账号' : '登录'}
+              </button>
+            </>
           )}
-          <label className="form-label">
-            邮箱
-            <input className="field" type="email" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="name@example.com" />
-          </label>
-          <label className="form-label">
-            密码
-            <input className="field" type="password" required value={password} onChange={(event) => setPassword(event.target.value)} placeholder="至少 6 位" />
-          </label>
-          {error && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-          <button className="primary-button w-full justify-center" disabled={(!isSupabaseConfigured && isRegister) || loading}>
-            {loading ? '处理中...' : isRegister ? '创建账号' : '登录'}
-          </button>
-          <button type="button" className="w-full text-sm font-medium text-slate-600 hover:text-slate-950" onClick={() => setIsRegister((value) => !value)}>
-            {isRegister ? '已有账号，去登录' : '没有账号，去注册'}
-          </button>
         </form>
       </div>
     </section>

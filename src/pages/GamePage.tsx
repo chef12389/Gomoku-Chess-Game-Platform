@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Bell, Bot, Clock3, HelpCircle, LogOut, MessageCircle, Music, Play, RotateCcw, Send, ShieldAlert, Sparkles, Undo2, Users, Volume2, VolumeX, Wifi, ZoomIn, ZoomOut } from 'lucide-react';
+import { Bell, Bot, Clock3, HelpCircle, LogOut, MessageCircle, Music, Play, RotateCcw, Send, ShieldAlert, Sparkles, Undo2, Users, Volume2, VolumeX, Wifi } from 'lucide-react';
 import { Board } from '../components/Board';
 import { ConfigNotice } from '../components/ConfigNotice';
 import { useAuth } from '../hooks/useAuth';
@@ -120,7 +120,6 @@ export function GamePage() {
     return localStorage.getItem(musicStorageKey) === 'true';
   });
   const [showRuleHelp, setShowRuleHelp] = useState(false);
-  const [boardZoom, setBoardZoom] = useState(1);
   const [nCount, setNCount] = useState(3);
   const [nCandidates, setNCandidates] = useState<Point[]>([]);
   const [aiThinking, setAiThinking] = useState(false);
@@ -784,8 +783,6 @@ export function GamePage() {
     '候选点阶段按棋盘标记选择即可，默认界面不展示长说明。',
   ];
 
-  const boardZoomPercent = Math.round(boardZoom * 100);
-
   if (screen === 'home') {
     return (
       <section className="space-y-7 animate-panel-in">
@@ -947,25 +944,7 @@ export function GamePage() {
             </div>
             <p>{message}</p>
           </div>
-          <div className="board-toolbar">
-            <div className="board-toolbar-info">
-              <span>棋盘缩放</span>
-              <strong>{boardZoomPercent}%</strong>
-            </div>
-            <div className="flex gap-2">
-              <button className="icon-button" type="button" aria-label="缩小棋盘" onClick={() => setBoardZoom((value) => Math.max(0.9, Number((value - 0.1).toFixed(1))))}>
-                <ZoomOut size={17} />
-              </button>
-              <button className="icon-button" type="button" aria-label="放大棋盘" onClick={() => setBoardZoom((value) => Math.min(1.2, Number((value + 0.1).toFixed(1))))}>
-                <ZoomIn size={17} />
-              </button>
-            </div>
-          </div>
-          <div className="board-viewport">
-            <div className="board-scale-frame" style={{ width: `${boardZoomPercent}%`, ['--board-mobile-width' as string]: `${Math.round(640 * boardZoom)}px` }}>
-              <Board board={board} nextColor={nextColor} moves={moves} winningLine={result.line} suggestedPoints={suggestedPoints} disabled={phase === 'finished'} onPlace={place} />
-            </div>
-          </div>
+          <Board board={board} nextColor={nextColor} moves={moves} winningLine={result.line} suggestedPoints={suggestedPoints} disabled={phase === 'finished'} onPlace={place} />
         </div>
         <aside className="space-y-4">
           <div className="panel p-5">
