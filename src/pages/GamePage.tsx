@@ -35,7 +35,7 @@ const AI_DIFFICULTY_OPTIONS: Array<{ id: AiDifficulty; label: string; depth: num
 const MOVE_TIME_LIMIT_OPTIONS = [0, 15, 30, 60, 120];
 const soundStorageKey = 'renju.sound.enabled';
 const musicStorageKey = 'renju.music.enabled';
-const backgroundMusicPath = '/music/background.ogg';
+const backgroundMusicPath = `${import.meta.env.BASE_URL}music/background.ogg`;
 
 const colorText = (color: Stone) => (color === 'black' ? '黑方' : '白方');
 const colorShort = (color: Stone) => (color === 'black' ? '黑' : '白');
