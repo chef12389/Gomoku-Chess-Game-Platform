@@ -29,6 +29,7 @@ export default {
         'stone-in': 'stoneIn .22s cubic-bezier(.2,.8,.2,1)',
         'soft-pulse': 'softPulse 2.4s ease-in-out infinite',
         'panel-in': 'panelIn .28s ease-out both',
+        'fade-in': 'fadeIn .3s ease-in-out both',
       },
       keyframes: {
         stoneIn: {
@@ -43,6 +44,10 @@ export default {
         panelIn: {
           '0%': { transform: 'translateY(10px)', opacity: '0' },
           '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
         },
       },
     },
