@@ -790,7 +790,7 @@ export function GamePage() {
         <div className="liquid-hero min-h-[360px]">
           <div className="relative z-10 grid min-h-[280px] items-center gap-8">
             <div>
-              <p className="text-sm font-semibold tracking-[.24em] text-amber-200/80">RENJU ARENA</p>
+              <p className="text-sm font-semibold tracking-[.24em] text-slate-500">RENJU ARENA</p>
               <h1 className="mt-5 font-serif text-6xl font-semibold leading-tight max-md:text-4xl">欢迎来到五子棋对弈平台</h1>
             </div>
           </div>
@@ -823,7 +823,7 @@ export function GamePage() {
         <div className="panel p-7">
           <div className="mb-6 flex items-end justify-between gap-4 max-md:flex-col max-md:items-start">
             <div>
-              <p className="text-sm font-semibold text-amber-700">对局设置</p>
+              <p className="text-sm font-semibold text-slate-600">对局设置</p>
               <h1 className="mt-2 text-3xl font-semibold">
                 {playerMode === 'ai' ? '人机对弈' : playerMode === 'local' ? '人人本地对弈' : '人人在线对弈'}
               </h1>
@@ -1049,10 +1049,10 @@ export function GamePage() {
                 {moveTimeLimitSeconds ? `提醒阈值：${moveTimeLimitSeconds} 秒，仅提示不判负。` : '提醒阈值：不限时间。'}
               </p>
             </div>
-            <div className="mt-4 rounded-lg bg-slate-950 p-4 text-amber-100 shadow-stone">
+            <div className="mt-4 rounded-lg bg-white p-4 text-slate-950 shadow-sm">
               <p className="text-sm">{message}</p>
               {aiThinking && (
-                <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/15">
+                <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100">
                   <div className="ai-progress-bar h-full rounded-full transition-all duration-300" style={{ width: `${aiProgress}%` }} />
                 </div>
               )}

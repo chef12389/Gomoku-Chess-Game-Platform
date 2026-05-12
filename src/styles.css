@@ -52,6 +52,10 @@ button:disabled {
 .app-shell {
   @apply relative min-h-dvh overflow-hidden text-slate-950;
   background:
+    linear-gradient(120deg, rgba(255,255,255,.7), rgba(255,255,255,.38) 48%, rgba(255,255,255,.74)),
+    url('/chess.jpg') center / cover fixed,
+    linear-gradient(90deg, rgba(15,23,42,.035) 0 1px, transparent 1px 28px),
+    linear-gradient(0deg, rgba(15,23,42,.03) 0 1px, transparent 1px 28px),
     linear-gradient(120deg, rgba(255,255,255,.58), rgba(255,255,255,.18) 30%, rgba(20,184,166,.08) 48%, rgba(252,211,77,.09) 70%, rgba(255,255,255,.5)),
     radial-gradient(ellipse at 18% 0%, rgba(252, 211, 77, .12), transparent 28rem),
     radial-gradient(ellipse at 84% 12%, rgba(20, 184, 166, .1), transparent 26rem),
@@ -83,8 +87,58 @@ button:disabled {
   animation: liquid-drift 14s ease-in-out infinite alternate-reverse;
 }
 
+.liquid-surface {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background-color: rgba(255,255,255,.24);
+  -webkit-backdrop-filter: blur(10px) saturate(1.2);
+  backdrop-filter: blur(10px) saturate(1.2);
+}
+
+.liquid-surface-effect {
+  z-index: 0;
+  opacity: 1;
+}
+
+.liquid-surface-fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 3rem;
+  border-radius: inherit;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.22), rgba(255,255,255,.035) 42%, rgba(45,212,191,.11)),
+    linear-gradient(90deg, rgba(15,23,42,.08) 0 1px, transparent 1px 22px),
+    linear-gradient(0deg, rgba(15,23,42,.06) 0 1px, transparent 1px 22px),
+    radial-gradient(ellipse at 18% 0%, rgba(255,255,255,.28), transparent 16rem);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.84),
+    inset 0 -16px 34px rgba(45,212,191,.1),
+    0 18px 56px rgba(15,23,42,.14);
+}
+
+.liquid-surface::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(120deg, rgba(255,255,255,.62), transparent 26%, rgba(255,255,255,.14) 54%, transparent 78%),
+    radial-gradient(ellipse at 75% 18%, rgba(255,255,255,.35), transparent 12rem);
+  mix-blend-mode: screen;
+  opacity: .66;
+}
+
+.liquid-surface-content {
+  position: relative;
+  z-index: 1;
+}
+
 .glass-header {
-  @apply sticky top-0 z-30 border-b border-white/50 bg-white/[.42] backdrop-blur-2xl;
+  @apply sticky top-0 z-30 border-b border-white/70 bg-white/[.78] backdrop-blur-sm;
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.9),
     inset 0 -1px 0 rgba(255,255,255,.24),
@@ -92,19 +146,19 @@ button:disabled {
 }
 
 .brand-mark {
-  @apply grid h-11 w-11 place-items-center rounded-lg bg-slate-950 text-amber-200 shadow-glow;
+  @apply grid h-11 w-11 place-items-center rounded-lg bg-white text-amber-600 shadow-glow;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.18),
-    0 18px 34px rgba(15, 23, 42, .24);
+    inset 0 1px 0 rgba(255,255,255,.9),
+    0 18px 34px rgba(15, 23, 42, .12);
 }
 
 .panel {
-  @apply relative overflow-hidden rounded-lg border border-white/80 bg-white/[.58] shadow-glow backdrop-blur-2xl;
+  @apply relative overflow-hidden rounded-lg border border-white/80 bg-white/[.78] shadow-glow backdrop-blur-2xl;
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.95),
     inset 0 -1px 0 rgba(148,163,184,.22),
     inset 0 0 0 1px rgba(255,255,255,.28),
-    0 18px 48px rgba(30, 41, 59, .13);
+    0 18px 48px rgba(30, 41, 59, .08);
 }
 
 .panel::before {
@@ -123,15 +177,17 @@ button:disabled {
 }
 
 .liquid-hero {
-  @apply relative overflow-hidden rounded-lg border border-white/70 bg-slate-950 p-10 text-amber-100 shadow-glow;
+  @apply relative overflow-hidden rounded-lg border border-white/70 bg-white/[.86] p-10 text-slate-950 shadow-glow;
   background:
-    radial-gradient(circle at 18% 12%, rgba(252, 211, 77, .28), transparent 18rem),
-    radial-gradient(circle at 88% 18%, rgba(45, 212, 191, .18), transparent 22rem),
-    linear-gradient(135deg, rgba(15, 23, 42, .98), rgba(30, 41, 59, .94));
+    linear-gradient(90deg, rgba(15,23,42,.04) 0 1px, transparent 1px 32px),
+    linear-gradient(0deg, rgba(15,23,42,.03) 0 1px, transparent 1px 32px),
+    radial-gradient(circle at 18% 12%, rgba(252, 211, 77, .22), transparent 18rem),
+    radial-gradient(circle at 88% 18%, rgba(45, 212, 191, .14), transparent 22rem),
+    linear-gradient(135deg, rgba(255,255,255,.94), rgba(241,245,249,.86));
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.18),
-    inset 0 -1px 0 rgba(255,255,255,.08),
-    0 30px 90px rgba(15, 23, 42, .18);
+    inset 0 1px 0 rgba(255,255,255,.95),
+    inset 0 -1px 0 rgba(148,163,184,.16),
+    0 30px 90px rgba(15, 23, 42, .08);
 }
 
 .liquid-hero::before {
@@ -154,7 +210,7 @@ button:disabled {
 }
 
 .glass-chip {
-  @apply rounded-lg border border-white/20 bg-white/[.08] p-4 text-sm text-amber-50/90 backdrop-blur-xl;
+  @apply rounded-lg border border-white/70 bg-white/[.72] p-4 text-sm text-slate-700 backdrop-blur-xl;
   box-shadow: inset 0 1px 0 rgba(255,255,255,.16);
 }
 
@@ -186,9 +242,12 @@ button:disabled {
 }
 
 .auth-mode-card {
-  @apply rounded-lg border border-white/70 bg-white/[.52] p-5 text-left text-slate-700 transition hover:-translate-y-0.5 hover:bg-white/80 hover:text-slate-950;
+  @apply rounded-lg border border-white/80 bg-white/[.72] p-5 text-left text-slate-700 transition hover:-translate-y-0.5 hover:bg-white/90 hover:text-slate-950;
   min-height: 132px;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.84), 0 12px 28px rgba(15,23,42,.06);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.94),
+    inset 0 -1px 0 rgba(148,163,184,.16),
+    0 12px 28px rgba(15,23,42,.08);
 }
 
 .auth-mode-card svg {
@@ -204,14 +263,41 @@ button:disabled {
 }
 
 .auth-mode-card.active {
-  @apply border-slate-950 bg-slate-950 text-amber-100;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.16), 0 20px 44px rgba(15,23,42,.18);
+  @apply border-amber-200 bg-amber-50 text-slate-950;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.92), 0 20px 44px rgba(15,23,42,.08);
+}
+
+.auth-mode-card,
+.home-mode-card,
+.glass-card,
+.segmented,
+.panel,
+.glass-header {
+  position: relative;
+  isolation: isolate;
+}
+
+.auth-mode-card::before,
+.home-mode-card::before,
+.glass-card::before,
+.segmented::before,
+.panel::before,
+.glass-header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(115deg, rgba(255,255,255,.72), transparent 28%, rgba(255,255,255,.18) 54%, transparent 78%),
+    radial-gradient(circle at 18% 0%, rgba(255,255,255,.52), transparent 16rem);
+  mix-blend-mode: screen;
+  opacity: .52;
 }
 
 .auth-mode-card.active svg,
 .auth-mode-card.active span,
 .auth-mode-card.active small {
-  @apply text-amber-100;
+  @apply text-slate-950;
 }
 
 .auth-form {
@@ -266,41 +352,91 @@ button:disabled {
 .secondary-button,
 .danger-button,
 .icon-button {
-  @apply inline-flex min-h-11 shrink-0 items-center gap-2 rounded-lg px-4 text-sm font-semibold transition duration-200 focus:outline-none focus:ring-2 focus:ring-slate-900/30;
+  @apply relative inline-flex min-h-11 shrink-0 items-center gap-2 rounded-lg px-4 text-[15px] font-semibold transition duration-200 focus:outline-none focus:ring-2 focus:ring-slate-900/30;
   touch-action: manipulation;
+  isolation: isolate;
+  overflow: hidden;
+  border-width: 1px;
+  border-style: solid;
+  -webkit-backdrop-filter: blur(18px) saturate(1.45);
+  backdrop-filter: blur(18px) saturate(1.45);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.9),
+    inset 0 -1px 0 rgba(255,255,255,.18),
+    0 14px 32px rgba(15, 23, 42, .11);
+}
+
+.nav-button::before,
+.primary-button::before,
+.secondary-button::before,
+.danger-button::before,
+.icon-button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.68), rgba(255,255,255,.18) 34%, rgba(255,255,255,.06) 60%, rgba(255,255,255,.28) 82%, rgba(255,255,255,.5)),
+    radial-gradient(circle at 18% 0%, rgba(255,255,255,.72), transparent 38%);
+  mix-blend-mode: screen;
+  opacity: .82;
+  pointer-events: none;
+}
+
+.nav-button > *,
+.primary-button > *,
+.secondary-button > *,
+.danger-button > *,
+.icon-button > * {
+  position: relative;
+  z-index: 1;
 }
 
 .nav-button {
-  @apply border border-transparent text-slate-600 hover:border-white/70 hover:bg-white/[.58] hover:text-slate-950 hover:shadow-sm;
+  @apply border-slate-200 bg-white/[.72] text-slate-700 hover:border-slate-300 hover:bg-white hover:text-slate-950;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.9),
+    inset 0 -1px 0 rgba(148,163,184,.16),
+    0 14px 32px rgba(15, 23, 42, .08);
 }
 
 .nav-button-active {
-  @apply border-white/15 bg-slate-950 text-amber-100 shadow-lg hover:bg-slate-900 hover:text-amber-100;
+  @apply border-amber-200 bg-amber-50 text-slate-950 hover:bg-amber-100 hover:text-slate-950;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.14),
-    0 14px 30px rgba(15, 23, 42, .2);
+    inset 0 1px 0 rgba(255,255,255,.94),
+    inset 0 -1px 0 rgba(148,163,184,.12),
+    0 16px 34px rgba(15, 23, 42, .08);
 }
 
 .primary-button {
-  @apply border border-white/10 bg-slate-950 text-amber-100 shadow-lg hover:-translate-y-0.5 hover:bg-slate-800;
+  @apply border-slate-200 bg-white text-slate-950 hover:-translate-y-0.5 hover:bg-slate-50 hover:text-slate-950;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.14),
-    0 18px 38px rgba(15, 23, 42, .2);
+    inset 0 1px 0 rgba(255,255,255,.94),
+    inset 0 -1px 0 rgba(148,163,184,.14),
+    0 18px 38px rgba(15, 23, 42, .08);
 }
 
 .secondary-button {
-  @apply border border-white/70 bg-white/[.52] text-slate-700 shadow-sm backdrop-blur-xl hover:-translate-y-0.5 hover:bg-white/80 hover:text-slate-950;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.82), 0 10px 26px rgba(15, 23, 42, .06);
+  @apply border-slate-200 bg-white/[.86] text-slate-950 hover:-translate-y-0.5 hover:bg-white hover:text-slate-950;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.94),
+    inset 0 -1px 0 rgba(148,163,184,.18),
+    0 12px 28px rgba(15, 23, 42, .08);
 }
 
 .danger-button {
-  @apply border border-red-200/70 bg-red-50/70 text-red-700 shadow-sm backdrop-blur-xl hover:-translate-y-0.5 hover:bg-red-100 hover:text-red-800;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.82), 0 10px 26px rgba(127, 29, 29, .08);
+  @apply border-rose-200 bg-rose-50/[.90] text-rose-700 hover:-translate-y-0.5 hover:bg-rose-100 hover:text-rose-800;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.94),
+    inset 0 -1px 0 rgba(251,113,133,.16),
+    0 12px 28px rgba(127, 29, 29, .08);
 }
 
 .icon-button {
-  @apply grid w-11 place-items-center border border-white/70 bg-white/[.52] p-0 text-slate-700 shadow-sm backdrop-blur-xl hover:bg-white/80 hover:text-slate-950;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.82), 0 10px 26px rgba(15, 23, 42, .06);
+  @apply grid w-11 place-items-center border-slate-200 bg-white/[.86] p-0 text-slate-950 hover:bg-white hover:text-slate-950;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.94),
+    inset 0 -1px 0 rgba(148,163,184,.18),
+    0 12px 28px rgba(15, 23, 42, .08);
 }
 
 .section-title {
@@ -338,14 +474,14 @@ button:disabled {
 }
 
 .chat-bubble.mine {
-  @apply ml-auto border border-slate-900/10 bg-slate-950 text-amber-100;
+  @apply ml-auto border border-slate-200 bg-white text-slate-950;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.18),
-    0 14px 28px rgba(15,23,42,.18);
+    inset 0 1px 0 rgba(255,255,255,.94),
+    0 14px 28px rgba(15,23,42,.08);
 }
 
 .chat-bubble.mine p {
-  @apply text-amber-50;
+  @apply text-slate-700;
 }
 
 .chat-bubble.theirs {
@@ -598,14 +734,14 @@ button:disabled {
 }
 
 .confirm-place-button {
-  @apply absolute left-1/2 top-full mt-1 inline-flex min-h-9 min-w-14 items-center justify-center rounded-lg border border-white/20 bg-slate-950 px-3 text-xs font-semibold text-amber-100 shadow-lg;
+  @apply absolute left-1/2 top-full mt-1 inline-flex min-h-9 min-w-14 items-center justify-center rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-950 shadow-lg;
   transform: translateX(-50%);
   white-space: nowrap;
   pointer-events: auto;
   touch-action: manipulation;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.18),
-    0 10px 24px rgba(15,23,42,.24);
+    inset 0 1px 0 rgba(255,255,255,.94),
+    0 10px 24px rgba(15,23,42,.10);
 }
 
 .confirm-place-button:focus-visible {
@@ -754,11 +890,11 @@ button:disabled {
 }
 
 .record-row.active {
-  @apply bg-slate-950 text-amber-100 hover:bg-slate-950;
+  @apply bg-amber-50 text-slate-950 hover:bg-amber-50;
 }
 
 .record-row.active span {
-  @apply text-amber-100;
+  @apply text-slate-950;
 }
 
 .records-layout {
@@ -780,8 +916,8 @@ button:disabled {
 }
 
 .replay-step-badge {
-  @apply rounded-lg border border-white/70 bg-slate-950 px-4 py-2 text-sm font-semibold text-amber-100 shadow-sm;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.16), 0 12px 28px rgba(15,23,42,.16);
+  @apply rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-950 shadow-sm;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.94), 0 12px 28px rgba(15,23,42,.08);
 }
 
 .replay-toolbar {
@@ -818,7 +954,7 @@ button:disabled {
   }
 
   .glass-header {
-    @apply bg-white/[.58];
+    @apply bg-white/[.86];
   }
 
   .liquid-hero {

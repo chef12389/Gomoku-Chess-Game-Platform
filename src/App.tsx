@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { BarChart3, BookOpen, Crown, LogIn, LogOut, Swords, UserRound } from 'lucide-react';
 import { useAuth } from './hooks/useAuth';
 import { signOut } from './lib/supabase';
@@ -12,11 +12,12 @@ type View = 'game' | 'records' | 'user' | 'admin' | 'auth';
 
 const nav = [
   { id: 'game', label: '对弈大厅', icon: Swords },
-  { id: 'records', label: '棋局库', icon: BookOpen },
+  { id: 'records', label: '棋谱库', icon: BookOpen },
   { id: 'user', label: '用户中心', icon: UserRound },
 ] as const;
 
 export default function App() {
+  const shellRef = useRef<HTMLDivElement>(null);
   const [view, setView] = useState<View>('auth');
   const [hasEntered, setHasEntered] = useState(false);
   const { user, isAdmin, loading, refresh } = useAuth();
@@ -44,7 +45,7 @@ export default function App() {
 
   if (!canUseApp) {
     return (
-      <div className="app-shell">
+      <div ref={shellRef} className="app-shell">
         <main className="relative z-10 mx-auto max-w-7xl px-6 py-8 max-md:px-3 max-md:py-4">
           <AuthPage onDone={enterHome} />
         </main>
@@ -53,7 +54,7 @@ export default function App() {
   }
 
   return (
-    <div className="app-shell">
+    <div ref={shellRef} className="app-shell">
       <header className="glass-header">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-6 py-4 max-md:flex-wrap max-md:px-4 max-md:py-3">
           <button className="flex min-w-0 items-center gap-3 text-left" onClick={() => setView('game')} aria-label="回到对弈大厅">

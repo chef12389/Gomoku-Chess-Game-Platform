@@ -1,6 +1,20 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
+  safelist: [
+    'relative',
+    'bg-black',
+    'transition-all',
+    'duration-150',
+    'ease-in-out',
+    'pointer-events-none',
+    'mix-blend-overlay',
+    'opacity-0',
+    'opacity-20',
+    'opacity-100',
+    'cursor-pointer',
+    'text-white',
+  ],
   theme: {
     extend: {
       fontFamily: {
