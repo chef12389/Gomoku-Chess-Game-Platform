@@ -120,6 +120,7 @@ export function GamePage() {
     return localStorage.getItem(musicStorageKey) === 'true';
   });
   const [showRuleHelp, setShowRuleHelp] = useState(false);
+  const [showMobileChat, setShowMobileChat] = useState(false);
   const [nCount, setNCount] = useState(3);
   const [nCandidates, setNCandidates] = useState<Point[]>([]);
   const [aiThinking, setAiThinking] = useState(false);
@@ -146,6 +147,16 @@ export function GamePage() {
   const onlineChatMessages = onlineRoom?.chat_messages || [];
 
   // ---- All useEffect hooks (unchanged logic) ----
+  // Header compression during gameplay on mobile
+  useEffect(() => {
+    if (screen === 'board') {
+      document.documentElement.classList.add('is-gameplay');
+    } else {
+      document.documentElement.classList.remove('is-gameplay');
+    }
+    return () => document.documentElement.classList.remove('is-gameplay');
+  }, [screen]);
+
   useEffect(() => {
     aiWorkerRef.current = new Worker(new URL('../lib/aiWorker.ts', import.meta.url), { type: 'module' });
     return () => {
@@ -243,7 +254,7 @@ export function GamePage() {
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ block: 'end' });
-  }, [onlineChatMessages.length]);
+  }, [onlineChatMessages.length, showMobileChat]);
 
   const pendingUndoRequest = useMemo(() => {
     if (!onlineRoom) return null;
@@ -802,9 +813,9 @@ export function GamePage() {
           <div className="absolute right-0 top-0 h-80 w-80 rounded-full bg-amber-500/8 blur-3xl translate-x-1/3 -translate-y-1/3" />
           <div className="absolute left-1/4 bottom-0 h-64 w-64 rounded-full bg-indigo-500/8 blur-3xl" />
 
-          <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-6 p-8 lg:p-10">
+          <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-4 p-5 sm:p-6 md:p-8 lg:p-10">
             <div className="flex-1">
-              <h1 className="font-serif text-4xl lg:text-5xl font-bold tracking-tight text-white mb-3 leading-tight">
+              <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-white mb-3 leading-tight">
                 欢迎来到{' '}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-amber-300">
                   星璇连珠
@@ -813,7 +824,7 @@ export function GamePage() {
             </div>
 
             {/* User card */}
-            <div className="shrink-0 rounded-2xl border border-white/15 bg-white/6 backdrop-blur-md p-5 min-w-[220px]">
+            <div className="shrink-0 rounded-2xl border border-white/15 bg-white/6 backdrop-blur-md p-4 min-w-0 w-full md:min-w-[220px]">
               <div className="text-xs font-semibold text-slate-400/90 uppercase tracking-wider mb-3">当前用户</div>
               <div className="flex items-center gap-3">
                 <div className="grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 text-sm font-bold text-white shadow-inner">
@@ -932,7 +943,7 @@ export function GamePage() {
           <div className="mb-6 flex items-end justify-between gap-4 max-md:flex-col max-md:items-start">
             <div>
               <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">对局设置</p>
-              <h1 className="text-3xl font-bold text-slate-900">
+              <h1 className="text-xl md:text-3xl font-bold text-slate-900">
                 {playerMode === 'ai' ? '人机对弈' : playerMode === 'local' ? '人人本地对弈' : '人人在线对弈'}
               </h1>
             </div>
@@ -1259,14 +1270,122 @@ export function GamePage() {
 
       {/* Mobile Action Bar */}
       <div className="mobile-action-bar">
-        <div>
-          <span>{statusLabel}</span>
-          <strong>{formatTime(currentTurnSeconds)}</strong>
+        <div className="mobile-action-status">
+          {phase === 'finished' ? (
+            <>
+              <span className="text-amber-700 font-bold">对局结束</span>
+              <strong className="text-amber-900">
+                {result.winner ? `${colorText(result.winner)}获胜` : '平局'}
+              </strong>
+            </>
+          ) : (
+            <>
+              <span>{statusLabel}</span>
+              <strong>{formatTime(currentTurnSeconds)}</strong>
+            </>
+          )}
         </div>
-        <button type="button" onClick={undo} aria-label="悔棋"><Undo2 size={18} /></button>
-        <button type="button" onClick={startGame} aria-label="重开"><RotateCcw size={18} /></button>
-        <button type="button" onClick={() => setShowRuleHelp((value) => !value)} aria-label="规则帮助"><HelpCircle size={18} /></button>
+        <div className="mobile-action-buttons">
+          <button type="button" onClick={undo} aria-label="悔棋"><Undo2 size={18} /></button>
+          <button type="button" onClick={startGame} aria-label="重开"><RotateCcw size={18} /></button>
+          {playerMode === 'online' && onlineRoom && (
+            <button
+              type="button"
+              onClick={() => setShowMobileChat((v) => !v)}
+              aria-label="聊天"
+              style={showMobileChat ? { background: 'linear-gradient(145deg, rgba(254,243,199,.8) 0%, rgba(253,230,138,.6) 100%)', borderColor: 'rgba(251,191,36,.4)' } : undefined}
+            >
+              <MessageCircle size={18} />
+            </button>
+          )}
+          <button type="button" onClick={() => setShowRuleHelp((value) => !value)} aria-label="规则帮助"><HelpCircle size={18} /></button>
+        </div>
+        <div className="mobile-action-buttons">
+          <button type="button" onClick={() => setSoundEnabled((value) => !value)} aria-label={soundEnabled ? '关闭音效' : '开启音效'}>
+            {soundEnabled ? <Volume2 size={18} /> : <VolumeX size={18} />}
+          </button>
+          <button type="button" onClick={() => setMusicEnabled((value) => !value)} aria-label={musicEnabled ? '关闭音乐' : '开启音乐'}>
+            <Music size={18} />
+          </button>
+          <button type="button" onClick={() => setScreen('setup')} aria-label="返回设置">
+            <LogOut size={18} />
+          </button>
+        </div>
       </div>
+
+      {/* Mobile Chat Drawer */}
+      {showMobileChat && playerMode === 'online' && (
+        <>
+          <div className="mobile-chat-overlay" onClick={() => setShowMobileChat(false)} />
+          <div className="mobile-chat-drawer">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-slate-900 text-lg flex items-center gap-2">
+                <MessageCircle size={18} />
+                房间消息
+              </h3>
+              <button
+                className="grid h-8 w-8 place-items-center rounded-lg border border-slate-200/60"
+                onClick={() => setShowMobileChat(false)}
+                style={{
+                  background: 'linear-gradient(175deg, rgba(255,255,255,.8) 0%, rgba(255,255,255,.6) 100%)',
+                }}
+              >
+                <span className="text-sm font-bold text-slate-500">X</span>
+              </button>
+            </div>
+            {pendingUndoRequest && (
+              <div className="mb-4 rounded-xl border border-amber-200/60 bg-amber-50/80 p-4 text-sm text-amber-900">
+                <p className="font-bold">对方申请悔棋</p>
+                <p className="mt-1 text-amber-700">同意后棋局将回退一步。</p>
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <button className="primary-button justify-center text-sm" onClick={() => void respondOnlineUndo(true)}>同意</button>
+                  <button className="secondary-button justify-center text-sm" onClick={() => void respondOnlineUndo(false)}>拒绝</button>
+                </div>
+              </div>
+            )}
+            <div className="chat-stream mb-4" aria-live="polite">
+              {onlineChatMessages.length ? (
+                onlineChatMessages.map((item) => {
+                  const mine = item.sender_color === onlineMyColor && item.sender_email === (user?.email || '访客');
+                  const systemMessage = item.kind && item.kind !== 'chat';
+                  return (
+                    <div key={item.id} className={`chat-bubble ${systemMessage ? 'system' : mine ? 'mine' : 'theirs'}`}>
+                      <div className="flex items-center justify-between gap-3 text-[11px] font-semibold">
+                        <span>{item.sender_color === 'black' ? '黑方' : '白方'} · {item.sender_email || '访客'}</span>
+                        <time>{new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time>
+                      </div>
+                      <p>{item.text}</p>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="empty-chat">房间消息会显示在这里。</div>
+              )}
+              <div ref={chatEndRef} />
+            </div>
+            <div className="flex gap-2">
+              <input
+                className="field min-w-0"
+                value={chatInput}
+                onChange={(event) => setChatInput(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault();
+                    void submitChat();
+                  }
+                }}
+                maxLength={180}
+                placeholder="发送消息..."
+                aria-label="发送在线对战消息"
+              />
+              <button className="primary-button px-3" onClick={submitChat} disabled={!chatInput.trim() || chatSending} aria-label="发送消息">
+                <Send size={17} />
+              </button>
+            </div>
+            {chatError && <p className="mt-2 text-sm text-red-600">{chatError}</p>}
+          </div>
+        </>
+      )}
     </section>
   );
 }

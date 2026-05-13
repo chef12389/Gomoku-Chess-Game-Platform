@@ -116,7 +116,7 @@ export function Board({ board, nextColor, moves, winningLine, suggestedPoints = 
                 {isPending && !cell && !disabled && (
                   <span className={`pending-stone ${nextColor}`}>
                     <span
-                      className="confirm-place-button"
+                      className={`confirm-place-button ${row >= 13 ? 'confirm-place-button--above' : ''}`}
                       role="button"
                       tabIndex={0}
                       onClick={(event) => {

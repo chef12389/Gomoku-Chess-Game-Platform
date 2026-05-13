@@ -854,28 +854,32 @@ button:disabled {
    MOBILE ACTION BAR
    ============================================= */
 .mobile-action-bar {
-  @apply fixed inset-x-3 bottom-3 z-40 hidden items-center gap-2 rounded-2xl border border-white/50 p-2;
+  @apply fixed inset-x-3 z-40 hidden items-center gap-1 rounded-2xl border border-white/50 p-1.5;
   background: linear-gradient(175deg, rgba(255,255,255,.88) 0%, rgba(255,255,255,.78) 100%);
   -webkit-backdrop-filter: blur(24px) saturate(1.4);
   backdrop-filter: blur(24px) saturate(1.4);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.94),
-    0 2px 16px rgba(15,23,42,.08);
+    0 -2px 16px rgba(15,23,42,.10);
 }
 
-.mobile-action-bar > div {
+.mobile-action-status {
   @apply min-w-0 flex-1 px-2;
 }
 
-.mobile-action-bar span {
+.mobile-action-status span {
   @apply block truncate text-xs font-semibold text-slate-500;
 }
 
-.mobile-action-bar strong {
+.mobile-action-status strong {
   @apply block text-base font-bold text-slate-900;
 }
 
-.mobile-action-bar button {
+.mobile-action-buttons {
+  @apply flex items-center gap-0.5;
+}
+
+.mobile-action-buttons button {
   @apply grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-slate-200/60;
   background: linear-gradient(175deg, rgba(255,255,255,.8) 0%, rgba(255,255,255,.6) 100%);
   touch-action: manipulation;
@@ -962,6 +966,9 @@ button:disabled {
   outline: none;
   box-shadow: none;
   transform: translate(-50%, -50%);
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .board-cell:focus,
@@ -1266,12 +1273,194 @@ button:disabled {
    RESPONSIVE
    ============================================= */
 @media (max-width: 768px) {
-  .game-screen {
-    padding-bottom: 5.75rem;
+  /* ------- Safe Area ------- */
+  .glass-header {
+    background: linear-gradient(180deg, rgba(255,255,255,.92) 0%, rgba(255,255,255,.84) 100%);
+    padding-top: calc(0.5rem + env(safe-area-inset-top, 0px));
+  }
+
+  /* ------- Performance: Reduce Blur ------- */
+  .app-shell:has(.game-screen)::before {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    background: rgba(255, 255, 255, 0.12);
   }
 
   .glass-header {
-    background: linear-gradient(180deg, rgba(255,255,255,.92) 0%, rgba(255,255,255,.84) 100%);
+    -webkit-backdrop-filter: blur(8px) saturate(1.2);
+    backdrop-filter: blur(8px) saturate(1.2);
+  }
+
+  .panel {
+    -webkit-backdrop-filter: blur(10px) saturate(1.1);
+    backdrop-filter: blur(10px) saturate(1.1);
+  }
+
+  .glass-card {
+    -webkit-backdrop-filter: blur(4px) saturate(1.2);
+    backdrop-filter: blur(4px) saturate(1.2);
+  }
+
+  .glass-chip {
+    -webkit-backdrop-filter: blur(4px) saturate(1.1);
+    backdrop-filter: blur(4px) saturate(1.1);
+  }
+
+  .liquid-hero {
+    -webkit-backdrop-filter: blur(6px) saturate(1.2);
+    backdrop-filter: blur(6px) saturate(1.2);
+  }
+
+  .nav-button,
+  .primary-button,
+  .secondary-button,
+  .danger-button,
+  .icon-button {
+    -webkit-backdrop-filter: blur(8px) saturate(1.3);
+    backdrop-filter: blur(8px) saturate(1.3);
+  }
+
+  .chat-stream {
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+
+  .auth-form {
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+  }
+
+  .auth-mode-card {
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+
+  .mobile-action-bar {
+    -webkit-backdrop-filter: blur(10px) saturate(1.2);
+    backdrop-filter: blur(10px) saturate(1.2);
+  }
+
+  .records-list {
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+
+  .replay-toolbar {
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+
+  .replay-step-badge {
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+
+  .turn-status {
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+
+  .metric {
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+
+  .rule-help-body {
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+
+  .field {
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+
+  .segmented {
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+
+  .data-table th {
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+
+  /* ------- Board Maximization ------- */
+  .game-screen {
+    padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
+    overflow-x: hidden;
+  }
+
+  .board-panel {
+    @apply p-2;
+  }
+
+  .board-panel > .mb-5 {
+    display: none !important; /* hide title + undo/restart row, covered by action bar */
+  }
+
+  .board-case {
+    @apply max-w-full p-1;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 236, 190, .28),
+      inset 0 -4px 10px rgba(31, 16, 8, .30),
+      0 10px 28px rgba(15, 23, 42, .12);
+  }
+
+  .board-shell {
+    @apply p-[6%];
+    box-shadow:
+      inset 0 0 0 4px rgba(91, 48, 18, .24),
+      inset 0 0 0 6px rgba(255, 227, 166, .12),
+      inset 0 8px 16px rgba(255,255,255,.10),
+      inset 0 -10px 18px rgba(67, 31, 9, .16);
+  }
+
+  .board-shell::before {
+    inset: 6%;
+  }
+
+  .board-lines {
+    left: 6%;
+    top: 6%;
+    width: 88%;
+    height: 88%;
+  }
+
+  .board-cell {
+    width: clamp(20px, 6.2vw, 30px);
+    height: clamp(20px, 6.2vw, 30px);
+    min-width: 20px;
+    min-height: 20px;
+  }
+
+  .board-coords {
+    @apply text-[11px];
+  }
+
+  .board-coords.top,
+  .board-coords.bottom {
+    left: 6%;
+    right: 6%;
+  }
+
+  .board-coords.left,
+  .board-coords.right {
+    top: 6%;
+    bottom: 6%;
+  }
+
+  .board-grid,
+  .board-case,
+  .board-shell {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  /* ------- Panels ------- */
+  .panel {
+    @apply rounded-xl;
   }
 
   .liquid-hero {
@@ -1282,56 +1471,99 @@ button:disabled {
     @apply min-h-0 p-6;
   }
 
-  .panel {
-    @apply rounded-xl;
-  }
-
-  .board-case {
-    @apply max-w-full p-2;
-    box-shadow:
-      inset 0 2px 0 rgba(255, 236, 190, .32),
-      inset 0 -6px 14px rgba(31, 16, 8, .38),
-      0 16px 40px rgba(15, 23, 42, .16);
-  }
-
-  .board-shell {
-    @apply p-[8%];
-    box-shadow:
-      inset 0 0 0 5px rgba(91, 48, 18, .28),
-      inset 0 0 0 7px rgba(255, 227, 166, .14),
-      inset 0 12px 22px rgba(255,255,255,.14),
-      inset 0 -14px 26px rgba(67, 31, 9, .20);
-  }
-
-  .board-cell {
-    width: clamp(18px, 5.5vw, 28px);
-    height: clamp(18px, 5.5vw, 28px);
-  }
-
-  .board-coords {
-    @apply text-[10px];
-  }
-
-  .chat-stream {
-    @apply max-h-56;
-  }
-
+  /* ------- Buttons ------- */
   .primary-button,
   .secondary-button,
   .danger-button {
     @apply justify-center;
   }
 
+  /* ------- Turn Status ------- */
+  .turn-status {
+    @apply mb-3 p-3 text-xs;
+  }
+  .turn-status strong {
+    @apply text-lg;
+  }
+  .turn-status p {
+    @apply text-sm leading-5;
+  }
+
+  /* ------- Chat ------- */
+  .chat-stream {
+    max-height: 35dvh;
+  }
+
+  /* ------- Mobile Action Bar ------- */
+  .mobile-action-bar {
+    @apply flex;
+    bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .mobile-action-status {
+    @apply min-w-0 flex-1 px-2;
+  }
+  .mobile-action-status span {
+    @apply block truncate text-[11px] font-semibold text-slate-500;
+  }
+  .mobile-action-status strong {
+    @apply block text-[15px] font-bold text-slate-900;
+  }
+
+  .mobile-action-buttons {
+    @apply flex items-center gap-0.5;
+  }
+  .mobile-action-buttons button {
+    @apply grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-slate-200/60;
+    background: linear-gradient(175deg, rgba(255,255,255,.8) 0%, rgba(255,255,255,.6) 100%);
+    touch-action: manipulation;
+  }
+
+  /* Mobile chat drawer */
+  .mobile-chat-overlay {
+    @apply fixed inset-0 z-50 bg-black/20;
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+  .mobile-chat-drawer {
+    @apply fixed inset-x-0 bottom-0 z-50 rounded-t-2xl border border-white/40 p-4;
+    max-height: 60dvh;
+    overflow-y: auto;
+    background: linear-gradient(175deg, rgba(255,255,255,.94) 0%, rgba(255,255,255,.86) 100%);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* ------- Header Compression During Gameplay ------- */
+  .is-gameplay .glass-header {
+    padding-top: calc(0.25rem + env(safe-area-inset-top, 0px));
+    padding-bottom: 0.25rem;
+  }
+  .is-gameplay .glass-header > div {
+    @apply py-1;
+  }
+  .is-gameplay .glass-header nav {
+    display: none !important;
+  }
+  .is-gameplay .glass-header .brand-mark,
+  .is-gameplay .glass-header img {
+    height: 2rem;
+    width: 2rem;
+  }
+
+  /* ------- Records ------- */
   .records-layout {
     grid-template-columns: 1fr;
   }
 
   .records-list {
-    max-height: 360px;
+    max-height: 50dvh;
   }
 
   .replay-toolbar {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: auto auto;
+    row-gap: 0.75rem;
   }
 
   .replay-progress {
@@ -1339,12 +1571,22 @@ button:disabled {
     order: -1;
   }
 
+  .replay-step-badge {
+    grid-column: 1 / -1;
+    justify-self: center;
+    order: -2;
+  }
+
   .segmented-5 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .mobile-action-bar {
-    @apply flex;
+  /* ------- Confirm Button Edge Fix ------- */
+  .confirm-place-button--above {
+    top: auto !important;
+    bottom: 100% !important;
+    margin-top: 0;
+    margin-bottom: 0.25rem;
   }
 }
 
@@ -1358,8 +1600,23 @@ button:disabled {
   }
 
   .board-cell {
-    width: clamp(16px, 5.1vw, 23px);
-    height: clamp(16px, 5.1vw, 23px);
+    width: clamp(18px, 5.8vw, 26px);
+    height: clamp(18px, 5.8vw, 26px);
+    min-width: 18px;
+    min-height: 18px;
+  }
+
+  /* Aggressive blur removal for low-end devices */
+  .app-shell:has(.game-screen)::before {
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+  }
+  .panel,
+  .glass-card,
+  .glass-chip,
+  .liquid-hero {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
   }
 }
 

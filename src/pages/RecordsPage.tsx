@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { BookOpen, ChevronsLeft, ChevronsRight, RefreshCw, SkipBack, SkipForward, Clock3, Hash } from 'lucide-react';
 import { Board } from '../components/Board';
 import { ConfigNotice } from '../components/ConfigNotice';
@@ -48,6 +48,7 @@ export function RecordsPage() {
   const [replayIndex, setReplayIndex] = useState(0);
 
   const soundEnabled = typeof window === 'undefined' ? true : localStorage.getItem(soundStorageKey) !== 'false';
+  const touchStartX = useRef(0);
 
   const load = async () => {
     const local = fetchLocalGameRecords();
@@ -82,6 +83,17 @@ export function RecordsPage() {
     const clamped = Math.max(0, Math.min(selected.moves.length, next));
     setReplayIndex(clamped);
     if (withSound && clamped > replayIndex) playSound('replay', soundEnabled);
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) {
+      setStep(replayIndex + (diff > 0 ? 1 : -1), true);
+    }
   };
 
   return (
@@ -158,13 +170,15 @@ export function RecordsPage() {
                 <div className="metric"><span>限时</span><strong className="text-lg">{selected.moveTimeLimitSeconds ? `${selected.moveTimeLimitSeconds}s` : '不限'}</strong></div>
               </div>
 
-              <Board
-                board={replayBoard}
-                nextColor={nextColor}
-                moves={replayMoves}
-                winningLine={replayResult.line}
-                readOnly
-              />
+              <div onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+                <Board
+                  board={replayBoard}
+                  nextColor={nextColor}
+                  moves={replayMoves}
+                  winningLine={replayResult.line}
+                  readOnly
+                />
+              </div>
 
               {/* Toolbar */}
               <div className="replay-toolbar mt-5">
