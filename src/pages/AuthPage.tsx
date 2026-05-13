@@ -58,13 +58,14 @@ export function AuthPage({ onDone }: { onDone: () => void }) {
         {/* Left Banner */}
         <div className="relative flex flex-1 flex-col justify-center overflow-hidden p-10 lg:p-14">
           {/* Background decorations */}
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950" />
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-900/85 via-slate-800/85 to-slate-950/85" />
+          <div className="absolute inset-0 bg-cover bg-center opacity-30" style={{ backgroundImage: `url(${import.meta.env.BASE_URL}myChess.ico)` }} />
           <div className="absolute -left-16 -top-16 h-56 w-56 rounded-full bg-amber-400/15 blur-3xl" />
           <div className="absolute -bottom-28 -right-28 h-72 w-72 rounded-full bg-indigo-500/10 blur-3xl" />
           <div className="absolute left-1/2 top-1/2 h-48 w-48 -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-300/5 blur-3xl" />
 
           <div className="relative z-10">
-            <h1 className="text-4xl font-bold leading-tight tracking-tight text-white drop-shadow-lg lg:text-[52px]">
+            <h1 className="text-3xl font-bold leading-tight tracking-tight text-white drop-shadow-lg lg:text-[40px]">
               欢迎来到
               <br />
               <span className="mt-2 inline-block bg-gradient-to-r from-amber-200 via-amber-400 to-amber-300 bg-clip-text text-transparent">
@@ -72,22 +73,22 @@ export function AuthPage({ onDone }: { onDone: () => void }) {
               </span>
             </h1>
 
-            <p className="mt-6 max-w-md text-lg leading-relaxed text-slate-200/90 drop-shadow-md">
+            <p className="mt-5 max-w-md text-base leading-relaxed text-slate-200/90 drop-shadow-md">
               在这里，你可以成为棋盘上的棋逢对手。选择一种身份开始，记录你的每一次精彩落子，与各路高手切磋技艺。
             </p>
 
-            <div className="mt-10 grid grid-cols-2 gap-5">
+            <div className="mt-8 grid grid-cols-2 gap-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/20 backdrop-blur-md">
-                  <Swords className="text-amber-300" size={20} />
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10 ring-1 ring-white/20 backdrop-blur-md">
+                  <Swords className="text-amber-300" size={18} />
                 </div>
-                <h3 className="font-semibold text-white drop-shadow-md">随时随地对弈</h3>
+                <h3 className="font-medium text-white drop-shadow-md text-sm">随时随地对弈</h3>
               </div>
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/20 backdrop-blur-md">
-                  <History className="text-amber-300" size={20} />
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10 ring-1 ring-white/20 backdrop-blur-md">
+                  <History className="text-amber-300" size={18} />
                 </div>
-                <h3 className="font-semibold text-white drop-shadow-md">棋局复盘</h3>
+                <h3 className="font-medium text-white drop-shadow-md text-sm">棋局复盘</h3>
               </div>
             </div>
           </div>

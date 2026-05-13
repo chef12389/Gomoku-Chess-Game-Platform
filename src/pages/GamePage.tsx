@@ -804,10 +804,6 @@ export function GamePage() {
 
           <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-6 p-8 lg:p-10">
             <div className="flex-1">
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/8 px-3.5 py-1 text-xs font-semibold text-amber-200/90 backdrop-blur-md mb-5">
-                <Crown size={13} />
-                PRO ARENA
-              </div>
               <h1 className="font-serif text-4xl lg:text-5xl font-bold tracking-tight text-white mb-3 leading-tight">
                 欢迎来到{' '}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-amber-300">

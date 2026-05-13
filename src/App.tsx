@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { BarChart3, BookOpen, Crown, LogIn, LogOut, Sparkles, Swords, UserRound } from 'lucide-react';
+import { BarChart3, BookOpen, LogIn, LogOut, Swords, UserRound } from 'lucide-react';
 import { useAuth } from './hooks/useAuth';
 import { signOut } from './lib/supabase';
 import { AdminPage } from './pages/AdminPage';
@@ -63,9 +63,9 @@ export default function App() {
             onClick={() => setView('game')}
             aria-label="回到对弈大厅"
           >
-            <span className="brand-mark">
-              <Crown size={20} />
-            </span>
+            <div className="h-10 w-10 rounded-xl bg-white p-0.5">
+              <img src={`${import.meta.env.BASE_URL}myChess.ico`} alt="Logo" className="h-full w-full rounded-lg object-cover" />
+            </div>
             <span className="min-w-0 hidden sm:block">
               <span className="block font-serif text-xl font-bold tracking-tight text-slate-900">弈境</span>
               <span className="block text-[10px] font-semibold uppercase tracking-[.28em] text-amber-700/70">
