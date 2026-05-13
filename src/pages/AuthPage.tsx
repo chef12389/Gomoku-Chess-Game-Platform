@@ -58,22 +58,17 @@ export function AuthPage({ onDone }: { onDone: () => void }) {
         {/* Left Banner */}
         <div className="relative flex flex-1 flex-col justify-center overflow-hidden p-10 lg:p-14">
           {/* Background decorations */}
-          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/25 via-amber-600/15 to-indigo-900/45 mix-blend-overlay" />
-          <div className="absolute -left-16 -top-16 h-56 w-56 rounded-full bg-amber-400/25 blur-3xl" />
-          <div className="absolute -bottom-28 -right-28 h-72 w-72 rounded-full bg-indigo-500/20 blur-3xl" />
-          <div className="absolute left-1/2 top-1/2 h-48 w-48 -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-300/10 blur-3xl" />
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950" />
+          <div className="absolute -left-16 -top-16 h-56 w-56 rounded-full bg-amber-400/15 blur-3xl" />
+          <div className="absolute -bottom-28 -right-28 h-72 w-72 rounded-full bg-indigo-500/10 blur-3xl" />
+          <div className="absolute left-1/2 top-1/2 h-48 w-48 -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-300/5 blur-3xl" />
 
           <div className="relative z-10">
-            <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-amber-300/30 bg-amber-400/15 px-4 py-1.5 text-sm font-semibold text-amber-100 backdrop-blur-md">
-              <Sparkles size={15} />
-              <span>棋逢对手 体验升级</span>
-            </div>
-
             <h1 className="text-4xl font-bold leading-tight tracking-tight text-white drop-shadow-lg lg:text-[52px]">
               欢迎来到
               <br />
               <span className="mt-2 inline-block bg-gradient-to-r from-amber-200 via-amber-400 to-amber-300 bg-clip-text text-transparent">
-                星阵连珠对弈平台
+                五子棋对弈平台
               </span>
             </h1>
 
@@ -82,23 +77,17 @@ export function AuthPage({ onDone }: { onDone: () => void }) {
             </p>
 
             <div className="mt-10 grid grid-cols-2 gap-5">
-              <div className="flex items-start gap-3">
+              <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/20 backdrop-blur-md">
                   <Swords className="text-amber-300" size={20} />
                 </div>
-                <div>
-                  <h3 className="font-semibold text-white drop-shadow-md">随时随地对弈</h3>
-                  <p className="mt-1 text-sm text-slate-300/90 drop-shadow-md">数据极致，流畅体验</p>
-                </div>
+                <h3 className="font-semibold text-white drop-shadow-md">随时随地对弈</h3>
               </div>
-              <div className="flex items-start gap-3">
+              <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/20 backdrop-blur-md">
                   <History className="text-amber-300" size={20} />
                 </div>
-                <div>
-                  <h3 className="font-semibold text-white drop-shadow-md">棋局复盘</h3>
-                  <p className="mt-1 text-sm text-slate-300/90 drop-shadow-md">回味经典，提升棋艺</p>
-                </div>
+                <h3 className="font-semibold text-white drop-shadow-md">棋局复盘</h3>
               </div>
             </div>
           </div>

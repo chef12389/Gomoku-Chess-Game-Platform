@@ -811,12 +811,9 @@ export function GamePage() {
               <h1 className="font-serif text-4xl lg:text-5xl font-bold tracking-tight text-white mb-3 leading-tight">
                 欢迎来到{' '}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-amber-300">
-                  星阵连珠
+                  星璇连珠
                 </span>
               </h1>
-              <p className="text-slate-300/90 text-lg max-w-xl leading-relaxed">
-                专业级的五子棋对弈平台，提供人机训练、本地双人与在线对战，助你提升棋力。
-              </p>
             </div>
 
             {/* User card */}
@@ -858,7 +855,7 @@ export function GamePage() {
               </div>
               <h3 className="text-xl font-bold text-slate-900 mb-2">人机训练</h3>
               <p className="text-sm leading-relaxed text-slate-600">
-                和内置 AI 对弈，支持从新手到专业级的难度调节，是提升棋力的最佳选择。
+                和内置 AI 对弈，有四档难度调节，实现计算机博弈。
               </p>
               <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-amber-600 opacity-0 group-hover:opacity-100 transition-opacity">
                 开始对弈 <span className="text-lg leading-none">&rarr;</span>
@@ -875,7 +872,7 @@ export function GamePage() {
               </div>
               <h3 className="text-xl font-bold text-slate-900 mb-2">本地双人</h3>
               <p className="text-sm leading-relaxed text-slate-600">
-                与身边的朋友同屏对弈，轮流落子。适合线下聚会或单人双手进行棋局复盘演练。
+                同屏对弈，轮流落子。
               </p>
               <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-amber-600 opacity-0 group-hover:opacity-100 transition-opacity">
                 开始对弈 <span className="text-lg leading-none">&rarr;</span>
@@ -892,7 +889,7 @@ export function GamePage() {
               </div>
               <h3 className="text-xl font-bold text-slate-900 mb-2">在线对战</h3>
               <p className="text-sm leading-relaxed text-slate-600">
-                创建或加入房间，为远方的棋手提供实时对弈体验。支持观战模式与在线聊天。
+                创建或加入房间，进行实时对弈。
               </p>
               <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-amber-600 opacity-0 group-hover:opacity-100 transition-opacity">
                 开始对弈 <span className="text-lg leading-none">&rarr;</span>
