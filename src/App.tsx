@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { BarChart3, BookOpen, Crown, LogIn, LogOut, Swords, UserRound } from 'lucide-react';
+import { BarChart3, BookOpen, Crown, LogIn, LogOut, Sparkles, Swords, UserRound } from 'lucide-react';
 import { useAuth } from './hooks/useAuth';
 import { signOut } from './lib/supabase';
 import { AdminPage } from './pages/AdminPage';
@@ -56,50 +56,81 @@ export default function App() {
   return (
     <div ref={shellRef} className="app-shell">
       <header className="glass-header">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-6 py-4 max-md:flex-wrap max-md:px-4 max-md:py-3">
-          <button className="flex min-w-0 items-center gap-3 text-left" onClick={() => setView('game')} aria-label="回到对弈大厅">
+        <div className="mx-auto flex max-w-7xl items-center gap-4 px-6 py-3 max-md:flex-wrap max-md:px-4 max-md:py-2.5">
+          {/* Brand */}
+          <button
+            className="flex min-w-0 shrink-0 items-center gap-3 text-left group"
+            onClick={() => setView('game')}
+            aria-label="回到对弈大厅"
+          >
             <span className="brand-mark">
-              <Crown size={22} />
+              <Crown size={20} />
             </span>
-            <span className="min-w-0">
-              <span className="block font-serif text-2xl font-semibold max-md:text-xl">弈境</span>
-              <span className="block truncate text-xs uppercase tracking-[.22em] text-slate-500 max-sm:max-w-36">Renju Pro Arena</span>
+            <span className="min-w-0 hidden sm:block">
+              <span className="block font-serif text-xl font-bold tracking-tight text-slate-900">弈境</span>
+              <span className="block text-[10px] font-semibold uppercase tracking-[.28em] text-amber-700/70">
+                Renju Pro Arena
+              </span>
             </span>
           </button>
-          <nav className="flex items-center gap-2 max-md:order-3 max-md:w-full max-md:overflow-x-auto max-md:pb-1">
+
+          {/* Divider */}
+          <span className="h-7 w-px bg-gradient-to-b from-transparent via-slate-300/60 to-transparent shrink-0 max-md:hidden" />
+
+          {/* Nav */}
+          <nav className="flex items-center gap-1.5 max-md:order-3 max-md:w-full max-md:overflow-x-auto max-md:pb-0.5">
             {nav.map((item) => {
               const Icon = item.icon;
+              const isActive = view === item.id;
               return (
-                <button key={item.id} className={`nav-button ${view === item.id ? 'nav-button-active' : ''}`} onClick={() => setView(item.id)}>
-                  <Icon size={17} />
+                <button
+                  key={item.id}
+                  className={`nav-button ${isActive ? 'nav-button-active' : ''}`}
+                  onClick={() => setView(item.id)}
+                >
+                  <Icon size={16} />
                   {item.label}
                 </button>
               );
             })}
             {isAdmin && (
-              <button className={`nav-button ${view === 'admin' ? 'nav-button-active' : ''}`} onClick={() => setView('admin')}>
-                <BarChart3 size={17} />
+              <button
+                className={`nav-button ${view === 'admin' ? 'nav-button-active' : ''}`}
+                onClick={() => setView('admin')}
+              >
+                <BarChart3 size={16} />
                 管理后台
               </button>
             )}
           </nav>
-          <div className="flex min-w-0 items-center gap-2">
+
+          {/* Spacer */}
+          <span className="flex-1 max-md:hidden" />
+
+          {/* User area */}
+          <div className="flex items-center gap-2 shrink-0">
             {user ? (
               <>
-                <span className="max-w-44 truncate text-sm text-slate-600 max-sm:hidden">{user.email}</span>
+                <div className="flex items-center gap-2.5 rounded-xl border border-white/50 px-3 py-1.5 bg-white/40 backdrop-blur-md max-sm:hidden">
+                  <span className="grid h-7 w-7 place-items-center rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 text-[11px] font-bold text-white shadow-inner">
+                    {user.email ? user.email.charAt(0).toUpperCase() : 'G'}
+                  </span>
+                  <span className="max-w-36 truncate text-sm font-medium text-slate-700">{user.email}</span>
+                </div>
                 <button className="icon-button" onClick={logout} aria-label="退出登录">
-                  <LogOut size={18} />
+                  <LogOut size={17} />
                 </button>
               </>
             ) : (
               <button className="primary-button" onClick={() => setView('auth')}>
-                <LogIn size={18} />
+                <LogIn size={17} />
                 登录 / 注册
               </button>
             )}
           </div>
         </div>
       </header>
+
       <main className="relative z-10 mx-auto max-w-7xl px-6 py-8 max-md:px-3 max-md:py-4">
         {view === 'game' && <GamePage />}
         {view === 'records' && <RecordsPage />}

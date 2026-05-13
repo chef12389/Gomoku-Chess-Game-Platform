@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { KeyRound, UserPlus, UserRound, Swords, History, Sparkles } from 'lucide-react';
+import { KeyRound, UserPlus, UserRound, Swords, History, Sparkles, ArrowRight } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { isSupabaseConfigured, signIn, signUp } from '../lib/supabase';
 import { ConfigNotice } from '../components/ConfigNotice';
@@ -41,136 +41,169 @@ export function AuthPage({ onDone }: { onDone: () => void }) {
   };
 
   const authOptions: Array<{ id: AuthMode; title: string; desc: string; icon: typeof KeyRound }> = [
-    { id: 'login', title: '登录账号', desc: '同步棋谱与记录', icon: KeyRound },
+    { id: 'login', title: '登录账号', desc: '同步棋局与记录', icon: KeyRound },
     { id: 'register', title: '注册账号', desc: '创建新身份', icon: UserPlus },
-    { id: 'guest', title: '游客模式', desc: '直接体验', icon: UserRound },
+    { id: 'guest', title: '访客模式', desc: '直接体验', icon: UserRound },
   ];
 
   return (
-    <section className="flex min-h-[calc(100dvh-8rem)] w-full items-center justify-center py-4 lg:py-8 animate-panel-in">
+    <section className="auth-screen relative flex min-h-screen w-full items-center justify-center py-4 lg:py-8 animate-panel-in">
       <ConfigNotice />
-      <div className="flex w-full max-w-5xl flex-col overflow-hidden rounded-3xl bg-white/30 shadow-2xl backdrop-blur-xl ring-1 ring-white/50 lg:flex-row">
-        
-        {/* Left Banner Area */}
-        <div className="relative flex flex-1 flex-col justify-center p-10 lg:p-14 text-white bg-slate-900/60 overflow-hidden">
-           <div className="absolute inset-0 bg-gradient-to-br from-amber-500/20 to-indigo-900/40 mix-blend-overlay"></div>
-           <div className="relative z-10">
-               <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-amber-300/40 bg-amber-400/20 px-4 py-1.5 text-sm font-semibold text-amber-200 backdrop-blur-md shadow-glow">
-                 <Sparkles size={16} /> <span>全新升级的对弈体验</span>
-               </div>
-               <h1 className="text-4xl font-bold tracking-tight lg:text-[54px] drop-shadow-lg text-white leading-tight">
-                  欢迎来到<br/>
-                  <span className="mt-2 block bg-gradient-to-r from-amber-300 to-amber-500 bg-clip-text text-transparent">五子棋对弈平台</span>
-               </h1>
-               <p className="mt-6 text-lg leading-relaxed text-slate-200 drop-shadow-md max-w-md">
-                  在这里，你可以体验纯粹的棋盘博弈。选择一种身份开始，记录你的每一次精妙落子，与各路高手切磋技艺。
-               </p>
-               <div className="mt-12 grid grid-cols-2 gap-6">
-                  <div className="flex flex-col gap-3">
-                     <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 ring-1 ring-white/30 shadow-inner backdrop-blur-md">
-                        <Swords className="text-amber-400" size={24} />
-                     </div>
-                     <div>
-                       <h3 className="font-semibold text-white text-lg">云端对弈</h3>
-                       <p className="text-sm text-slate-300 mt-1">随时随地，数据漫游</p>
-                     </div>
-                  </div>
-                  <div className="flex flex-col gap-3">
-                     <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 ring-1 ring-white/30 shadow-inner backdrop-blur-md">
-                        <History className="text-amber-400" size={24} />
-                     </div>
-                     <div>
-                       <h3 className="font-semibold text-white text-lg">棋谱复盘</h3>
-                       <p className="text-sm text-slate-300 mt-1">回味经典，提升棋力</p>
-                     </div>
-                  </div>
-               </div>
-           </div>
+      <div className="relative z-10 flex w-full max-w-5xl flex-col overflow-hidden rounded-3xl shadow-2xl ring-1 ring-white/40 lg:flex-row"
+        style={{
+          background: 'linear-gradient(175deg, rgba(255,255,255,.72) 0%, rgba(255,255,255,.52) 100%)',
+          backdropFilter: 'blur(28px) saturate(1.3)',
+        }}
+      >
+        {/* Left Banner */}
+        <div className="relative flex flex-1 flex-col justify-center overflow-hidden p-10 lg:p-14">
+          {/* Background decorations */}
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/25 via-amber-600/15 to-indigo-900/45 mix-blend-overlay" />
+          <div className="absolute -left-16 -top-16 h-56 w-56 rounded-full bg-amber-400/25 blur-3xl" />
+          <div className="absolute -bottom-28 -right-28 h-72 w-72 rounded-full bg-indigo-500/20 blur-3xl" />
+          <div className="absolute left-1/2 top-1/2 h-48 w-48 -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-300/10 blur-3xl" />
+
+          <div className="relative z-10">
+            <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-amber-300/30 bg-amber-400/15 px-4 py-1.5 text-sm font-semibold text-amber-100 backdrop-blur-md">
+              <Sparkles size={15} />
+              <span>棋逢对手 体验升级</span>
+            </div>
+
+            <h1 className="text-4xl font-bold leading-tight tracking-tight text-white drop-shadow-lg lg:text-[52px]">
+              欢迎来到
+              <br />
+              <span className="mt-2 inline-block bg-gradient-to-r from-amber-200 via-amber-400 to-amber-300 bg-clip-text text-transparent">
+                星阵连珠对弈平台
+              </span>
+            </h1>
+
+            <p className="mt-6 max-w-md text-lg leading-relaxed text-slate-200/90 drop-shadow-md">
+              在这里，你可以成为棋盘上的棋逢对手。选择一种身份开始，记录你的每一次精彩落子，与各路高手切磋技艺。
+            </p>
+
+            <div className="mt-10 grid grid-cols-2 gap-5">
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/20 backdrop-blur-md">
+                  <Swords className="text-amber-300" size={20} />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-white drop-shadow-md">随时随地对弈</h3>
+                  <p className="mt-1 text-sm text-slate-300/90 drop-shadow-md">数据极致，流畅体验</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/20 backdrop-blur-md">
+                  <History className="text-amber-300" size={20} />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-white drop-shadow-md">棋局复盘</h3>
+                  <p className="mt-1 text-sm text-slate-300/90 drop-shadow-md">回味经典，提升棋艺</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Right Form Area */}
-        <div className="w-full bg-white/95 p-8 lg:w-[460px] lg:p-12 relative flex flex-col justify-center shadow-[-20px_0_40px_rgba(0,0,0,0.1)] z-10">
-            
-            <div className="grid grid-cols-3 gap-3 mb-8">
-              {authOptions.map((item) => {
-                const Icon = item.icon;
-                const isActive = mode === item.id;
-                return (
-                  <button 
-                    key={item.id} 
-                    type="button" 
-                    className={`flex flex-col items-center justify-center rounded-2xl p-3 transition-all duration-300 ${isActive ? 'bg-amber-100 text-amber-900 shadow-md ring-1 ring-amber-400 scale-105' : 'bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-800'}`} 
-                    onClick={() => { setMode(item.id); setError(''); }}
-                  >
-                    <Icon size={22} className={isActive ? 'text-amber-600 mb-2' : 'mb-2 opacity-60'} />
-                    <span className="text-sm font-bold">{item.title}</span>
-                  </button>
-                );
-              })}
-            </div>
+        <div className="relative z-10 flex w-full flex-col justify-center bg-white/90 p-8 shadow-[-20px_0_40px_rgba(0,0,0,0.08)] lg:w-[460px] lg:p-12">
+          {/* Mode selector */}
+          <div className="grid grid-cols-3 gap-2.5">
+            {authOptions.map((item) => {
+              const Icon = item.icon;
+              const isActive = mode === item.id;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  className={`flex flex-col items-center justify-center rounded-2xl p-3 transition-all duration-300 ${
+                    isActive
+                      ? 'bg-gradient-to-br from-amber-100 to-amber-200/80 text-amber-900 shadow-md ring-1 ring-amber-300/60 scale-[1.03]'
+                      : 'bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-700 hover:scale-[1.02]'
+                  }`}
+                  onClick={() => { setMode(item.id); setError(''); }}
+                >
+                  <Icon size={20} className={isActive ? 'text-amber-600 mb-1.5' : 'mb-1.5 opacity-50'} />
+                  <span className="text-[12px] font-bold">{item.title}</span>
+                </button>
+              );
+            })}
+          </div>
 
-            <form className="flex flex-col space-y-5" onSubmit={submit}>
-              {mode === 'guest' ? (
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 text-center shadow-inner mt-4">
-                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 text-amber-600 ring-4 ring-amber-50">
-                    <UserRound size={32} />
-                  </div>
-                  <h2 className="text-xl font-bold text-slate-900 mb-2">直接体验对局</h2>
-                  <p className="text-sm text-slate-600 leading-relaxed mb-8">
-                    您可以立刻开始人机对战或本地双人模式；如果您需要云端保存或在线对战，请先登录账号。
+          <form className="flex flex-col" onSubmit={submit}>
+            {mode === 'guest' ? (
+              <div className="mt-6 rounded-3xl border border-slate-200/60 bg-gradient-to-br from-slate-50 to-white p-8 text-center shadow-inner">
+                <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-amber-100 to-amber-200 text-amber-600 ring-4 ring-amber-50 shadow-md">
+                  <UserRound size={36} />
+                </div>
+                <h2 className="text-2xl font-bold text-slate-900 mb-3">直接体验对局</h2>
+                <p className="text-sm text-slate-600 leading-relaxed mb-8">
+                  你可以立即开始人机对弈或本地双人模式；如果你需要云端保存或在线对战，请先登录账号。
+                </p>
+                <button type="submit" className="primary-button w-full h-14 text-lg rounded-2xl">
+                  以访客身份进入
+                  <ArrowRight size={20} />
+                </button>
+              </div>
+            ) : (
+              <div className="animate-panel-in mt-6 space-y-5">
+                <div>
+                  <h2 className="text-3xl font-bold text-slate-900">{isRegister ? '创建新账号' : '欢迎回来'}</h2>
+                  <p className="text-sm text-slate-500 mt-2">
+                    {isRegister ? '填写以下信息开启你的棋弈之旅' : '登录你的账号以继续对弈'}
                   </p>
-                  <button type="submit" className="primary-button w-full h-12 text-lg">以游客身份进入</button>
                 </div>
-              ) : (
-                <div className="animate-panel-in space-y-5">
-                  <div className="mb-4">
-                    <h2 className="text-2xl font-bold text-slate-900">{isRegister ? '创建新账号' : '欢迎回来'}</h2>
-                    <p className="text-sm text-slate-500 mt-1">{isRegister ? '填写以下信息开启你的围棋之旅' : '登录你的账号以继续对弈'}</p>
-                  </div>
-                  
-                  {isRegister && (
-                    <div>
-                      <label className="block text-sm font-bold text-slate-700 mb-1.5">昵称</label>
-                      <input 
-                        className="w-full rounded-xl border-0 bg-slate-100 px-4 py-3.5 text-slate-900 ring-1 ring-inset ring-slate-200 focus:bg-white focus:ring-2 focus:ring-inset focus:ring-amber-500 transition-all outline-none" 
-                        value={displayName} 
-                        onChange={(event) => setDisplayName(event.target.value)} 
-                        placeholder="请输入棋手昵称" 
-                      />
-                    </div>
-                  )}
+
+                {isRegister && (
                   <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-1.5">邮箱账号</label>
-                    <input 
-                      className="w-full rounded-xl border-0 bg-slate-100 px-4 py-3.5 text-slate-900 ring-1 ring-inset ring-slate-200 focus:bg-white focus:ring-2 focus:ring-inset focus:ring-amber-500 transition-all outline-none" 
-                      type="email" 
-                      required 
-                      value={email} 
-                      onChange={(event) => setEmail(event.target.value)} 
-                      placeholder="name@example.com" 
+                    <label className="block text-[13px] font-bold text-slate-700 mb-2 uppercase tracking-wide">昵称</label>
+                    <input
+                      className="field"
+                      value={displayName}
+                      onChange={(event) => setDisplayName(event.target.value)}
+                      placeholder="请输入棋手称号"
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-1.5">登录密码</label>
-                    <input 
-                      className="w-full rounded-xl border-0 bg-slate-100 px-4 py-3.5 text-slate-900 ring-1 ring-inset ring-slate-200 focus:bg-white focus:ring-2 focus:ring-inset focus:ring-amber-500 transition-all outline-none" 
-                      type="password" 
-                      required 
-                      value={password} 
-                      onChange={(event) => setPassword(event.target.value)} 
-                      placeholder="至少 6 位字符" 
-                    />
-                  </div>
-                  {error && <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600 border border-red-100">{error}</div>}
-                  <button 
-                    className="primary-button w-full h-12 mt-4 text-lg" 
-                    disabled={(!isSupabaseConfigured && isRegister) || loading}
-                  >
-                    {loading ? '正在处理...' : isRegister ? '立即注册' : '登 录'}
-                  </button>
+                )}
+
+                <div>
+                  <label className="block text-[13px] font-bold text-slate-700 mb-2 uppercase tracking-wide">电子邮箱</label>
+                  <input
+                    className="field"
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    placeholder="name@example.com"
+                  />
                 </div>
-              )}
-            </form>
+
+                <div>
+                  <label className="block text-[13px] font-bold text-slate-700 mb-2 uppercase tracking-wide">登录密码</label>
+                  <input
+                    className="field"
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    placeholder="至少 6 位字符"
+                  />
+                </div>
+
+                {error && (
+                  <div className="rounded-xl bg-red-50 p-4 text-sm text-red-600 border border-red-100 font-medium">
+                    {error}
+                  </div>
+                )}
+
+                <button
+                  className="primary-button w-full h-14 text-[16px] rounded-2xl"
+                  disabled={(!isSupabaseConfigured && isRegister) || loading}
+                >
+                  {loading ? '正在处理...' : isRegister ? '立即注册' : '登录'}
+                </button>
+              </div>
+            )}
+          </form>
         </div>
       </div>
     </section>

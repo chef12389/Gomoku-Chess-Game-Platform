@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Bell, Bot, Clock3, HelpCircle, LogOut, MessageCircle, Music, Play, RotateCcw, Send, ShieldAlert, Sparkles, Undo2, Users, Volume2, VolumeX, Wifi } from 'lucide-react';
+import { Swords, BarChart3, BookOpen, Crown, Bell, Bot, Clock3, HelpCircle, LogOut, MessageCircle, Music, Play, RotateCcw, Send, ShieldAlert, Sparkles, Undo2, Users, Volume2, VolumeX, Wifi } from 'lucide-react';
 import { Board } from '../components/Board';
 import { ConfigNotice } from '../components/ConfigNotice';
 import { useAuth } from '../hooks/useAuth';
@@ -145,6 +145,7 @@ export function GamePage() {
   const isAiTurn = screen === 'board' && playerMode === 'ai' && phase === 'playing' && !result.reason && nextColor === aiSide && !customOpeningInProgress;
   const onlineChatMessages = onlineRoom?.chat_messages || [];
 
+  // ---- All useEffect hooks (unchanged logic) ----
   useEffect(() => {
     aiWorkerRef.current = new Worker(new URL('../lib/aiWorker.ts', import.meta.url), { type: 'module' });
     return () => {
@@ -783,39 +784,153 @@ export function GamePage() {
     '候选点阶段按棋盘标记选择即可，默认界面不展示长说明。',
   ];
 
+  // ═══════════════════════════════════════════
+  // HOME SCREEN
+  // ═══════════════════════════════════════════
   if (screen === 'home') {
     return (
-      <section className="space-y-7 animate-panel-in">
+      <section className="space-y-8 animate-panel-in pb-8">
         <ConfigNotice />
-        <div className="liquid-hero min-h-[360px]">
-          <div className="relative z-10 grid min-h-[280px] items-center gap-8">
-            <div>
-              <p className="text-sm font-semibold tracking-[.24em] text-slate-500">RENJU ARENA</p>
-              <h1 className="mt-5 font-serif text-6xl font-semibold leading-tight max-md:text-4xl">欢迎来到五子棋对弈平台</h1>
+
+        {/* Hero Banner */}
+        <div className="relative overflow-hidden rounded-3xl border border-white/30 shadow-2xl"
+          style={{
+            background: 'linear-gradient(135deg, rgba(30,27,75,.92) 0%, rgba(45,35,25,.88) 50%, rgba(15,12,8,.94) 100%)',
+          }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-amber-500/20 via-amber-600/10 to-indigo-500/20 mix-blend-overlay" />
+          <div className="absolute right-0 top-0 h-80 w-80 rounded-full bg-amber-500/8 blur-3xl translate-x-1/3 -translate-y-1/3" />
+          <div className="absolute left-1/4 bottom-0 h-64 w-64 rounded-full bg-indigo-500/8 blur-3xl" />
+
+          <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-6 p-8 lg:p-10">
+            <div className="flex-1">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/8 px-3.5 py-1 text-xs font-semibold text-amber-200/90 backdrop-blur-md mb-5">
+                <Crown size={13} />
+                PRO ARENA
+              </div>
+              <h1 className="font-serif text-4xl lg:text-5xl font-bold tracking-tight text-white mb-3 leading-tight">
+                欢迎来到{' '}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-amber-300">
+                  星阵连珠
+                </span>
+              </h1>
+              <p className="text-slate-300/90 text-lg max-w-xl leading-relaxed">
+                专业级的五子棋对弈平台，提供人机训练、本地双人与在线对战，助你提升棋力。
+              </p>
+            </div>
+
+            {/* User card */}
+            <div className="shrink-0 rounded-2xl border border-white/15 bg-white/6 backdrop-blur-md p-5 min-w-[220px]">
+              <div className="text-xs font-semibold text-slate-400/90 uppercase tracking-wider mb-3">当前用户</div>
+              <div className="flex items-center gap-3">
+                <div className="grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 text-sm font-bold text-white shadow-inner">
+                  {user?.email ? user.email.charAt(0).toUpperCase() : 'G'}
+                </div>
+                <div>
+                  <div className="font-bold text-white text-lg truncate w-32">
+                    {user?.email ? user.email.split('@')[0] : '访客'}
+                  </div>
+                  <div className="text-xs text-slate-400/80 mt-0.5">
+                    {user?.email ? '已认证棋手' : '游客模式'}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-        <div className="grid grid-cols-3 gap-5 max-lg:grid-cols-1">
-          <button className="home-mode-card" onClick={() => chooseMode('ai')}>
-            <Bot className="mb-5 text-amber-600" size={34} />
-            <h2 className="text-2xl font-semibold">人机对弈</h2>
-            <p className="mt-3 text-sm leading-6 text-slate-600">和 AI 练习攻防，可在对局中调整难度。</p>
-          </button>
-          <button className="home-mode-card" onClick={() => chooseMode('local')}>
-            <Users className="mb-5 text-amber-600" size={34} />
-            <h2 className="text-2xl font-semibold">人人本地对弈</h2>
-            <p className="mt-3 text-sm leading-6 text-slate-600">同屏轮流落子，适合面对面复盘和练习。</p>
-          </button>
-          <button className="home-mode-card" onClick={() => chooseMode('online')}>
-            <Wifi className="mb-5 text-amber-600" size={34} />
-            <h2 className="text-2xl font-semibold">人人在线对弈</h2>
-            <p className="mt-3 text-sm leading-6 text-slate-600">创建或加入房间，与远端玩家对局。</p>
-          </button>
+
+        {/* Game Modes */}
+        <div>
+          <h2 className="text-xl font-bold text-slate-900 mb-5 flex items-center gap-2.5">
+            <span className="grid h-8 w-8 place-items-center rounded-lg bg-amber-100 text-amber-700">
+              <Swords size={18} />
+            </span>
+            选择对局模式
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {/* AI Mode */}
+            <button
+              className="home-mode-card group cursor-pointer"
+              onClick={() => chooseMode('ai')}
+            >
+              <div className="grid h-12 w-12 place-items-center rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 ring-1 ring-blue-200/60 mb-5 group-hover:scale-110 transition-transform duration-300">
+                <Bot className="text-blue-600" size={24} />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-2">人机训练</h3>
+              <p className="text-sm leading-relaxed text-slate-600">
+                和内置 AI 对弈，支持从新手到专业级的难度调节，是提升棋力的最佳选择。
+              </p>
+              <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-amber-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                开始对弈 <span className="text-lg leading-none">&rarr;</span>
+              </div>
+            </button>
+
+            {/* Local Mode */}
+            <button
+              className="home-mode-card group cursor-pointer"
+              onClick={() => chooseMode('local')}
+            >
+              <div className="grid h-12 w-12 place-items-center rounded-xl bg-gradient-to-br from-emerald-50 to-emerald-100 ring-1 ring-emerald-200/60 mb-5 group-hover:scale-110 transition-transform duration-300">
+                <Users className="text-emerald-600" size={24} />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-2">本地双人</h3>
+              <p className="text-sm leading-relaxed text-slate-600">
+                与身边的朋友同屏对弈，轮流落子。适合线下聚会或单人双手进行棋局复盘演练。
+              </p>
+              <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-amber-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                开始对弈 <span className="text-lg leading-none">&rarr;</span>
+              </div>
+            </button>
+
+            {/* Online Mode */}
+            <button
+              className="home-mode-card group cursor-pointer"
+              onClick={() => chooseMode('online')}
+            >
+              <div className="grid h-12 w-12 place-items-center rounded-xl bg-gradient-to-br from-amber-50 to-amber-100 ring-1 ring-amber-200/60 mb-5 group-hover:scale-110 transition-transform duration-300">
+                <Wifi className="text-amber-600" size={24} />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-2">在线对战</h3>
+              <p className="text-sm leading-relaxed text-slate-600">
+                创建或加入房间，为远方的棋手提供实时对弈体验。支持观战模式与在线聊天。
+              </p>
+              <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-amber-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                开始对弈 <span className="text-lg leading-none">&rarr;</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        {/* Info cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="glass-chip flex items-center gap-5 p-6 group cursor-pointer">
+            <div className="grid h-11 w-11 place-items-center rounded-xl bg-slate-100 text-slate-500 shrink-0 group-hover:bg-amber-100 group-hover:text-amber-600 transition-colors duration-300">
+              <BookOpen size={20} />
+            </div>
+            <div>
+              <h4 className="font-bold text-slate-900">棋局规则</h4>
+              <p className="text-sm text-slate-500 mt-1">了解标准的五子棋规则与三手交换等专业棋规</p>
+            </div>
+          </div>
+          <div className="glass-chip flex items-center gap-5 p-6 group cursor-pointer">
+            <div className="grid h-11 w-11 place-items-center rounded-xl bg-slate-100 text-slate-500 shrink-0 group-hover:bg-amber-100 group-hover:text-amber-600 transition-colors duration-300">
+              <BarChart3 size={20} />
+            </div>
+            <div>
+              <h4 className="font-bold text-slate-900">战绩统计</h4>
+              <p className="text-sm text-slate-500 mt-1">
+                {user ? '查看你的历史对局记录与胜率统计' : '登录后可以保存并查看你的对局记录'}
+              </p>
+            </div>
+          </div>
         </div>
       </section>
     );
   }
 
+  // ═══════════════════════════════════════════
+  // SETUP SCREEN
+  // ═══════════════════════════════════════════
   if (screen === 'setup') {
     return (
       <section className="space-y-6 animate-panel-in">
@@ -823,17 +938,23 @@ export function GamePage() {
         <div className="panel p-7">
           <div className="mb-6 flex items-end justify-between gap-4 max-md:flex-col max-md:items-start">
             <div>
-              <p className="text-sm font-semibold text-slate-600">对局设置</p>
-              <h1 className="mt-2 text-3xl font-semibold">
+              <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">对局设置</p>
+              <h1 className="text-3xl font-bold text-slate-900">
                 {playerMode === 'ai' ? '人机对弈' : playerMode === 'local' ? '人人本地对弈' : '人人在线对弈'}
               </h1>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2.5">
               <button className="secondary-button" onClick={() => setScreen('home')}>返回首页</button>
-              {playerMode !== 'online' && <button className="primary-button" onClick={startGame}><Play size={18} />开始对弈</button>}
+              {playerMode !== 'online' && (
+                <button className="primary-button" onClick={startGame}>
+                  <Play size={18} />开始对弈
+                </button>
+              )}
             </div>
           </div>
+
           <div className="grid grid-cols-3 gap-5 max-lg:grid-cols-2 max-md:grid-cols-1">
+            {/* Opening Mode */}
             <div className="glass-card">
               <label className="form-label">开局规则</label>
               <div className="segmented mt-2">
@@ -841,6 +962,8 @@ export function GamePage() {
                 <button className={mode === 'free' ? 'active' : ''} onClick={() => setMode('free')}>自由开局</button>
               </div>
             </div>
+
+            {/* Side Selection */}
             {(playerMode === 'ai' || playerMode === 'online') && (
               <div className="glass-card">
                 <label className="form-label">你执棋方</label>
@@ -850,12 +973,16 @@ export function GamePage() {
                 </div>
               </div>
             )}
+
+            {/* AI Difficulty */}
             {playerMode === 'ai' && (
               <div className="glass-card">
                 <label className="form-label">AI 难度</label>
                 {difficultyControl}
               </div>
             )}
+
+            {/* Move Time Limit */}
             <div className="glass-card">
               <label className="form-label">出子时间提醒</label>
               <div className="segmented segmented-5 mt-2">
@@ -866,6 +993,8 @@ export function GamePage() {
                 ))}
               </div>
             </div>
+
+            {/* Sound Toggle */}
             <div className="glass-card">
               <label className="form-label">音效反馈</label>
               <button type="button" className="secondary-button mt-2 w-full justify-center" onClick={() => setSoundEnabled((value) => !value)}>
@@ -873,6 +1002,8 @@ export function GamePage() {
                 {soundEnabled ? '已开启' : '已关闭'}
               </button>
             </div>
+
+            {/* Opening Strategy & N-count (standard mode) */}
             {mode === 'standard' && (
               <>
                 <div className="glass-card max-lg:col-span-2 max-md:col-span-1">
@@ -883,9 +1014,7 @@ export function GamePage() {
                     <select className="field" value={openingId} onChange={(event) => setOpeningId(event.target.value)}>
                       <option value={CUSTOM_OPENING_ID}>自定义开局</option>
                       {OPENINGS.map((item) => (
-                        <option key={item.id} value={item.id}>
-                          {item.name}
-                        </option>
+                        <option key={item.id} value={item.id}>{item.name}</option>
                       ))}
                     </select>
                   )}
@@ -900,6 +1029,8 @@ export function GamePage() {
                 </div>
               </>
             )}
+
+            {/* Online Room */}
             {playerMode === 'online' && (
               <div className="glass-card max-lg:col-span-2 max-md:col-span-1">
                 <label className="form-label">在线房间</label>
@@ -918,25 +1049,31 @@ export function GamePage() {
     );
   }
 
+  // ═══════════════════════════════════════════
+  // BOARD SCREEN
+  // ═══════════════════════════════════════════
   return (
     <section className="game-screen animate-panel-in">
       <ConfigNotice />
-      <div className="game-layout mb-6 grid grid-cols-[minmax(0,1fr)_360px] gap-6 max-lg:grid-cols-1 max-md:gap-4">
+      <div className="game-layout mb-6 grid grid-cols-[minmax(0,1fr)_340px] gap-6 max-lg:grid-cols-1 max-md:gap-4">
+        {/* Main Board Area */}
         <div className="panel board-panel p-5">
           <div className="mb-5 flex items-center justify-between gap-4 max-md:flex-col max-md:items-start">
             <div>
-              <h1 className="font-serif text-3xl font-semibold">五子棋对弈</h1>
-              <p className="mt-1 text-sm text-slate-600">
+              <h1 className="font-serif text-2xl font-bold text-slate-900">五子棋对弈</h1>
+              <p className="mt-1 text-sm text-slate-500">
                 当前：{playerMode === 'online' ? `在线房间 ${onlineRoom?.code || ''}` : mode === 'standard' ? openingName : '自由开局'}
                 {' · '}
                 {playerMode === 'local' ? '本地双人' : `你执${colorShort(humanSide)}`}
               </p>
             </div>
-            <div className="flex flex-wrap gap-2 max-md:w-full">
+            <div className="flex gap-2">
               <button className="secondary-button" onClick={undo}><Undo2 size={17} />悔棋</button>
               <button className="secondary-button" onClick={startGame}><RotateCcw size={17} />重开</button>
             </div>
           </div>
+
+          {/* Turn Status */}
           <div className={`turn-status ${statusTone}`}>
             <div>
               <span>当前状态</span>
@@ -944,31 +1081,46 @@ export function GamePage() {
             </div>
             <p>{message}</p>
           </div>
-          <Board board={board} nextColor={nextColor} moves={moves} winningLine={result.line} suggestedPoints={suggestedPoints} disabled={phase === 'finished'} onPlace={place} />
+
+          <Board
+            board={board}
+            nextColor={nextColor}
+            moves={moves}
+            winningLine={result.line}
+            suggestedPoints={suggestedPoints}
+            disabled={phase === 'finished'}
+            onPlace={place}
+          />
         </div>
+
+        {/* Sidebar */}
         <aside className="space-y-4">
+          {/* Controls */}
           <div className="panel p-5">
-            <h2 className="section-title"><Sparkles size={18} />对局控制</h2>
-            <button type="button" className="secondary-button mt-4 w-full justify-center" onClick={() => setSoundEnabled((value) => !value)}>
-              {soundEnabled ? <Volume2 size={17} /> : <VolumeX size={17} />}
-              {soundEnabled ? '音效开启' : '音效关闭'}
-            </button>
-            <button type="button" className="secondary-button mt-3 w-full justify-center" onClick={() => setMusicEnabled((value) => !value)}>
-              <Music size={17} />
-              {musicEnabled ? '背景音乐开启' : '背景音乐关闭'}
-            </button>
-            <button className="secondary-button mt-3 w-full justify-center" onClick={() => setScreen('setup')}>返回设置</button>
-            <button className="secondary-button mt-3 w-full justify-center" onClick={() => setScreen('home')}>返回首页</button>
-            {playerMode === 'online' && onlineRoom && (
-              <button className="danger-button mt-3 w-full justify-center" onClick={leaveOnlineRoom}>
-                <LogOut size={17} />
-                离开房间
+            <h2 className="section-title"><Sparkles size={16} />对局控制</h2>
+            <div className="mt-4 space-y-2.5">
+              <button type="button" className="secondary-button w-full justify-center" onClick={() => setSoundEnabled((value) => !value)}>
+                {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
+                {soundEnabled ? '音效开启' : '音效关闭'}
               </button>
-            )}
+              <button type="button" className="secondary-button w-full justify-center" onClick={() => setMusicEnabled((value) => !value)}>
+                <Music size={16} />
+                {musicEnabled ? '背景音乐开启' : '背景音乐关闭'}
+              </button>
+              <button className="secondary-button w-full justify-center" onClick={() => setScreen('setup')}>返回设置</button>
+              <button className="secondary-button w-full justify-center" onClick={() => setScreen('home')}>返回首页</button>
+              {playerMode === 'online' && onlineRoom && (
+                <button className="danger-button w-full justify-center mt-1" onClick={leaveOnlineRoom}>
+                  <LogOut size={16} />离开房间
+                </button>
+              )}
+            </div>
           </div>
+
+          {/* Rule Help */}
           <div className="panel p-5">
             <button type="button" className="rule-help-toggle" onClick={() => setShowRuleHelp((value) => !value)} aria-expanded={showRuleHelp}>
-              <span className="section-title"><HelpCircle size={18} />规则帮助</span>
+              <span className="section-title"><HelpCircle size={16} />规则帮助</span>
               <span>{showRuleHelp ? '收起' : '展开'}</span>
             </button>
             {showRuleHelp && (
@@ -979,16 +1131,18 @@ export function GamePage() {
               </div>
             )}
           </div>
+
+          {/* Online Chat */}
           {playerMode === 'online' && (
             <div className="panel liquid-chat p-5">
-              <h2 className="section-title"><MessageCircle size={18} />实时互动</h2>
+              <h2 className="section-title"><MessageCircle size={16} />实时互动</h2>
               {pendingUndoRequest && (
-                <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50/80 p-3 text-sm text-amber-900">
-                  <p className="font-semibold">对方申请悔棋</p>
-                  <p className="mt-1">同意后棋局将回退一步。</p>
+                <div className="mt-4 rounded-xl border border-amber-200/60 bg-amber-50/80 p-4 text-sm text-amber-900">
+                  <p className="font-bold">对方申请悔棋</p>
+                  <p className="mt-1 text-amber-700">同意后棋局将回退一步。</p>
                   <div className="mt-3 grid grid-cols-2 gap-2">
-                    <button className="primary-button justify-center" onClick={() => void respondOnlineUndo(true)}>同意</button>
-                    <button className="secondary-button justify-center" onClick={() => void respondOnlineUndo(false)}>拒绝</button>
+                    <button className="primary-button justify-center text-sm" onClick={() => void respondOnlineUndo(true)}>同意</button>
+                    <button className="secondary-button justify-center text-sm" onClick={() => void respondOnlineUndo(false)}>拒绝</button>
                   </div>
                 </div>
               )}
@@ -1028,58 +1182,89 @@ export function GamePage() {
                   aria-label="发送在线对战消息"
                 />
                 <button className="primary-button px-3" onClick={submitChat} disabled={!chatInput.trim() || chatSending} aria-label="发送消息">
-                  <Send size={18} />
+                  <Send size={17} />
                 </button>
               </div>
               {chatError && <p className="mt-2 text-sm text-red-600">{chatError}</p>}
             </div>
           )}
+
+          {/* Game Status */}
           <div className="panel p-5">
-            <h2 className="section-title"><Clock3 size={18} />对局状态</h2>
+            <h2 className="section-title"><Clock3 size={16} />对局状态</h2>
             <div className="mt-4 grid grid-cols-2 gap-3">
               <div className="metric"><span>黑方</span><strong>{formatTime(blackSeconds)}</strong></div>
               <div className="metric"><span>白方</span><strong>{formatTime(whiteSeconds)}</strong></div>
             </div>
-            <div className="mt-3 rounded-lg border border-white/70 bg-white/55 p-3 text-sm text-slate-700">
+            <div className="mt-3 rounded-xl border border-white/40 p-3 text-sm"
+              style={{
+                background: 'linear-gradient(175deg, rgba(255,255,255,.56) 0%, rgba(255,255,255,.4) 100%)',
+              }}
+            >
               <div className="flex items-center justify-between gap-3">
-                <span className="inline-flex items-center gap-2 font-semibold"><Bell size={16} />本手用时</span>
-                <strong className="tabular-nums">{formatTime(currentTurnSeconds)}</strong>
+                <span className="inline-flex items-center gap-2 font-semibold text-slate-700"><Bell size={15} />本手用时</span>
+                <strong className="tabular-nums text-slate-900">{formatTime(currentTurnSeconds)}</strong>
               </div>
               <p className="mt-1 text-xs text-slate-500">
                 {moveTimeLimitSeconds ? `提醒阈值：${moveTimeLimitSeconds} 秒，仅提示不判负。` : '提醒阈值：不限时间。'}
               </p>
             </div>
-            <div className="mt-4 rounded-lg bg-white p-4 text-slate-950 shadow-sm">
-              <p className="text-sm">{message}</p>
+
+            {/* Message + AI progress */}
+            <div className="mt-4 rounded-xl border border-white/40 p-4 text-sm text-slate-700"
+              style={{
+                background: 'linear-gradient(175deg, rgba(255,255,255,.68) 0%, rgba(255,255,255,.52) 100%)',
+              }}
+            >
+              <p>{message}</p>
               {aiThinking && (
-                <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100">
+                <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200/60">
                   <div className="ai-progress-bar h-full rounded-full transition-all duration-300" style={{ width: `${aiProgress}%` }} />
                 </div>
               )}
             </div>
+
+            {/* AI Difficulty adjust */}
             {playerMode === 'ai' && (
-              <div className="mt-4 rounded-lg bg-white/70 p-4 text-sm text-slate-700">
+              <div className="mt-4 rounded-xl p-4 text-sm"
+                style={{
+                  background: 'linear-gradient(175deg, rgba(255,255,255,.56) 0%, rgba(255,255,255,.4) 100%)',
+                }}
+              >
                 <label className="form-label">对局中调整 AI 难度</label>
                 {difficultyControl}
               </div>
             )}
+
+            {/* Swap controls */}
             {phase === 'swap-offer' && whiteControlledByHuman && (
               <div className="mt-4 grid grid-cols-2 gap-2">
                 <button className="primary-button justify-center" onClick={() => swapSides()}>执行交换</button>
                 <button className="secondary-button justify-center" onClick={() => continueWithoutSwap()}>继续白 4</button>
               </div>
             )}
-            <div className="mt-4 flex items-center gap-2 text-sm text-slate-600">
-              <ShieldAlert size={16} />
+
+            <div className="mt-4 flex items-center gap-2 text-xs text-slate-500">
+              <ShieldAlert size={14} />
               黑棋禁手实时判定，白棋无禁手。
             </div>
           </div>
+
+          {/* Move notation */}
           <div className="panel p-5">
             <h2 className="section-title">棋谱</h2>
-            <p className="mt-3 max-h-36 overflow-auto rounded-lg bg-white/60 p-3 font-mono text-xs leading-6 text-slate-700">{moves.length ? serializeMoves(moves) : '暂无落子'}</p>
+            <p className="mt-3 max-h-36 overflow-auto rounded-xl p-3 font-mono text-xs leading-6 text-slate-700"
+              style={{
+                background: 'linear-gradient(175deg, rgba(255,255,255,.6) 0%, rgba(255,255,255,.4) 100%)',
+              }}
+            >
+              {moves.length ? serializeMoves(moves) : '暂无落子'}
+            </p>
           </div>
         </aside>
       </div>
+
+      {/* Mobile Action Bar */}
       <div className="mobile-action-bar">
         <div>
           <span>{statusLabel}</span>
