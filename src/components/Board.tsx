@@ -59,14 +59,11 @@ export function Board({ board, nextColor, moves, winningLine, suggestedPoints = 
   return (
     <div className={`board-case ${readOnly ? 'board-readonly' : ''}`}>
       <div className="board-shell">
-        <div className="board-coords top" aria-hidden="true">
-          {letters.map((letter) => <span key={letter}>{letter}</span>)}
-        </div>
         <div className="board-coords bottom" aria-hidden="true">
           {letters.map((letter) => <span key={letter}>{letter}</span>)}
         </div>
         <div className="board-coords left" aria-hidden="true">
-          {Array.from({ length: BOARD_SIZE }, (_, index) => <span key={index}>{index + 1}</span>)}
+          {Array.from({ length: BOARD_SIZE }, (_, index) => <span key={index}>{BOARD_SIZE - index}</span>)}
         </div>
 
 
@@ -104,7 +101,7 @@ export function Board({ board, nextColor, moves, winningLine, suggestedPoints = 
                 style={{ left: `${(col / (BOARD_SIZE - 1)) * 100}%`, top: `${(row / (BOARD_SIZE - 1)) * 100}%` }}
                 onClick={() => handlePlace({ row, col }, Boolean(cell))}
                 disabled={disabled || readOnly || Boolean(cell)}
-                aria-label={`${row + 1} 行 ${col + 1} 列${cell ? ` ${cell === 'black' ? '黑棋' : '白棋'}` : ' 空位'}`}
+                aria-label={`${BOARD_SIZE - row} 行 ${col + 1} 列${cell ? ` ${cell === 'black' ? '黑棋' : '白棋'}` : ' 空位'}`}
               >
                 {suggestion && !cell && (
                   <span className={`suggested-point ${suggestion.color || nextColor}`}>

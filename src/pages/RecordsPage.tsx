@@ -31,7 +31,7 @@ function winnerLabel(record: GameRecord) {
 
 function pointLabel(move?: Move) {
   if (!move) return '开局';
-  return `${move.color === 'black' ? '黑' : '白'} ${move.index} · ${BOARD_FILES[move.col]}${move.row + 1}`;
+  return `${move.color === 'black' ? '黑' : '白'} ${move.index} · ${BOARD_FILES[move.col]}${BOARD_FILES.length - move.row}`;
 }
 
 function buildReplayBoard(moves: Move[], replayIndex: number): Cell[][] {

@@ -229,5 +229,5 @@ export function getCandidateMoves(board: Cell[][], radius = 2): Point[] {
 
 export function serializeMoves(moves: Move[]): string {
   const files = 'ABCDEFGHIJKLMNO';
-  return moves.map((move) => `${move.index}.${move.color === 'black' ? '黑' : '白'} ${files[move.col]}${move.row + 1}`).join(' ');
+  return moves.map((move) => `${move.index}.${move.color === 'black' ? '黑' : '白'} ${files[move.col]}${BOARD_SIZE - move.row}`).join(' ');
 }
