@@ -68,9 +68,7 @@ export function Board({ board, nextColor, moves, winningLine, suggestedPoints = 
         <div className="board-coords left" aria-hidden="true">
           {Array.from({ length: BOARD_SIZE }, (_, index) => <span key={index}>{index + 1}</span>)}
         </div>
-        <div className="board-coords right" aria-hidden="true">
-          {Array.from({ length: BOARD_SIZE }, (_, index) => <span key={index}>{index + 1}</span>)}
-        </div>
+
 
         <svg className="board-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
           {points.map((value) => (

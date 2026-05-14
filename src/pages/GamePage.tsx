@@ -49,6 +49,25 @@ function formatBoardPoints(points: Point[]) {
   return points.map(formatBoardPoint).join('、') || '待选择';
 }
 
+function generateQipuText(
+  moves: Move[],
+  blackTeam: string,
+  whiteTeam: string,
+  winner: Stone | 'draw' | null,
+  dateLocation: string,
+  tournament: string,
+): string {
+  const resultText = winner === 'black' ? '先手胜' : winner === 'white' ? '后手胜' : '平局';
+  const moveStrings = moves.map((move, i) => {
+    const col = BOARD_FILES[move.col];
+    const row = move.row + 1;
+    const color = move.color === 'black' ? 'B' : 'W';
+    const mark = i === 0 ? 'MARK[1]' : '';
+    return `${color}(${col},${row})${mark}`;
+  });
+  return `{[C5][${blackTeam} B][${whiteTeam} W][${resultText}][${dateLocation}][${tournament}];${moveStrings.join(';')}}`;
+}
+
 function makeRecordId(): string {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID();
   return `record-${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -120,7 +139,6 @@ export function GamePage() {
     return localStorage.getItem(musicStorageKey) === 'true';
   });
   const [showRuleHelp, setShowRuleHelp] = useState(false);
-  const [showMobileChat, setShowMobileChat] = useState(false);
   const [nCount, setNCount] = useState(3);
   const [nCandidates, setNCandidates] = useState<Point[]>([]);
   const [aiThinking, setAiThinking] = useState(false);
@@ -133,6 +151,11 @@ export function GamePage() {
   const chatEndRef = useRef<HTMLDivElement | null>(null);
   const musicRef = useRef<HTMLAudioElement | null>(null);
   const autoSavedRecordKeyRef = useRef<string | null>(null);
+  const [showSaveQipu, setShowSaveQipu] = useState(false);
+  const [qipuBlackTeam, setQipuBlackTeam] = useState('');
+  const [qipuWhiteTeam, setQipuWhiteTeam] = useState('');
+  const [qipuDateLocation, setQipuDateLocation] = useState('');
+  const [qipuTournament, setQipuTournament] = useState('');
 
   const isCustomOpening = activeOpeningId === CUSTOM_OPENING_ID;
   const opening = useMemo(() => OPENINGS.find((item) => item.id === activeOpeningId) || selectBalancedOpening(), [activeOpeningId]);
@@ -147,16 +170,6 @@ export function GamePage() {
   const onlineChatMessages = onlineRoom?.chat_messages || [];
 
   // ---- All useEffect hooks (unchanged logic) ----
-  // Header compression during gameplay on mobile
-  useEffect(() => {
-    if (screen === 'board') {
-      document.documentElement.classList.add('is-gameplay');
-    } else {
-      document.documentElement.classList.remove('is-gameplay');
-    }
-    return () => document.documentElement.classList.remove('is-gameplay');
-  }, [screen]);
-
   useEffect(() => {
     aiWorkerRef.current = new Worker(new URL('../lib/aiWorker.ts', import.meta.url), { type: 'module' });
     return () => {
@@ -254,7 +267,7 @@ export function GamePage() {
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ block: 'end' });
-  }, [onlineChatMessages.length, showMobileChat]);
+  }, [onlineChatMessages.length]);
 
   const pendingUndoRequest = useMemo(() => {
     if (!onlineRoom) return null;
@@ -756,6 +769,33 @@ export function GamePage() {
     if (record) void saveGameRecord(record);
   }, [phase, moves, result.reason, result.winner, result.forbidden?.reason, mode, playerMode, user?.id, user?.email, blackSeconds, whiteSeconds]);
 
+  const openSaveQipu = () => {
+    const now = new Date();
+    const dateStr = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    setQipuDateLocation(dateStr);
+    setShowSaveQipu(true);
+  };
+
+  const downloadQipu = () => {
+    const blackTeam = qipuBlackTeam.trim() || '先手参赛队';
+    const whiteTeam = qipuWhiteTeam.trim() || '后手参赛队';
+    const dateLoc = qipuDateLocation.trim() || '未知时间地点';
+    const tournament = qipuTournament.trim() || '五子棋对局';
+    const text = generateQipuText(moves, blackTeam, whiteTeam, result.winner || (result.reason === 'draw' ? 'draw' : null), dateLoc, tournament);
+    const resultText = result.winner === 'black' ? '先手胜' : result.winner === 'white' ? '后手胜' : '平局';
+    const filename = `C5-${blackTeam} B vs ${whiteTeam} W-${resultText}-${dateLoc}-${tournament}.txt`;
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    setShowSaveQipu(false);
+  };
+
   const difficultyControl = (
     <div className="segmented mt-2">
       {AI_DIFFICULTY_OPTIONS.map((item) => (
@@ -813,9 +853,9 @@ export function GamePage() {
           <div className="absolute right-0 top-0 h-80 w-80 rounded-full bg-amber-500/8 blur-3xl translate-x-1/3 -translate-y-1/3" />
           <div className="absolute left-1/4 bottom-0 h-64 w-64 rounded-full bg-indigo-500/8 blur-3xl" />
 
-          <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-4 p-5 sm:p-6 md:p-8 lg:p-10">
+          <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-6 p-8 lg:p-10">
             <div className="flex-1">
-              <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-white mb-3 leading-tight">
+              <h1 className="font-serif text-4xl lg:text-5xl font-bold tracking-tight text-white mb-3 leading-tight">
                 欢迎来到{' '}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-amber-300">
                   星璇连珠
@@ -824,7 +864,7 @@ export function GamePage() {
             </div>
 
             {/* User card */}
-            <div className="shrink-0 rounded-2xl border border-white/15 bg-white/6 backdrop-blur-md p-4 min-w-0 w-full md:min-w-[220px]">
+            <div className="shrink-0 rounded-2xl border border-white/15 bg-white/6 backdrop-blur-md p-5 min-w-[220px]">
               <div className="text-xs font-semibold text-slate-400/90 uppercase tracking-wider mb-3">当前用户</div>
               <div className="flex items-center gap-3">
                 <div className="grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 text-sm font-bold text-white shadow-inner">
@@ -943,7 +983,7 @@ export function GamePage() {
           <div className="mb-6 flex items-end justify-between gap-4 max-md:flex-col max-md:items-start">
             <div>
               <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">对局设置</p>
-              <h1 className="text-xl md:text-3xl font-bold text-slate-900">
+              <h1 className="text-3xl font-bold text-slate-900">
                 {playerMode === 'ai' ? '人机对弈' : playerMode === 'local' ? '人人本地对弈' : '人人在线对弈'}
               </h1>
             </div>
@@ -1264,127 +1304,77 @@ export function GamePage() {
             >
               {moves.length ? serializeMoves(moves) : '暂无落子'}
             </p>
+            {moves.length > 0 && (
+              <button className="secondary-button w-full justify-center mt-3" onClick={openSaveQipu}>
+                保存棋谱
+              </button>
+            )}
           </div>
         </aside>
       </div>
 
       {/* Mobile Action Bar */}
       <div className="mobile-action-bar">
-        <div className="mobile-action-status">
-          {phase === 'finished' ? (
-            <>
-              <span className="text-amber-700 font-bold">对局结束</span>
-              <strong className="text-amber-900">
-                {result.winner ? `${colorText(result.winner)}获胜` : '平局'}
-              </strong>
-            </>
-          ) : (
-            <>
-              <span>{statusLabel}</span>
-              <strong>{formatTime(currentTurnSeconds)}</strong>
-            </>
-          )}
+        <div>
+          <span>{statusLabel}</span>
+          <strong>{formatTime(currentTurnSeconds)}</strong>
         </div>
-        <div className="mobile-action-buttons">
-          <button type="button" onClick={undo} aria-label="悔棋"><Undo2 size={18} /></button>
-          <button type="button" onClick={startGame} aria-label="重开"><RotateCcw size={18} /></button>
-          {playerMode === 'online' && onlineRoom && (
-            <button
-              type="button"
-              onClick={() => setShowMobileChat((v) => !v)}
-              aria-label="聊天"
-              style={showMobileChat ? { background: 'linear-gradient(145deg, rgba(254,243,199,.8) 0%, rgba(253,230,138,.6) 100%)', borderColor: 'rgba(251,191,36,.4)' } : undefined}
-            >
-              <MessageCircle size={18} />
-            </button>
-          )}
-          <button type="button" onClick={() => setShowRuleHelp((value) => !value)} aria-label="规则帮助"><HelpCircle size={18} /></button>
-        </div>
-        <div className="mobile-action-buttons">
-          <button type="button" onClick={() => setSoundEnabled((value) => !value)} aria-label={soundEnabled ? '关闭音效' : '开启音效'}>
-            {soundEnabled ? <Volume2 size={18} /> : <VolumeX size={18} />}
-          </button>
-          <button type="button" onClick={() => setMusicEnabled((value) => !value)} aria-label={musicEnabled ? '关闭音乐' : '开启音乐'}>
-            <Music size={18} />
-          </button>
-          <button type="button" onClick={() => setScreen('setup')} aria-label="返回设置">
-            <LogOut size={18} />
-          </button>
-        </div>
+        <button type="button" onClick={undo} aria-label="悔棋"><Undo2 size={18} /></button>
+        <button type="button" onClick={startGame} aria-label="重开"><RotateCcw size={18} /></button>
+        <button type="button" onClick={() => setShowRuleHelp((value) => !value)} aria-label="规则帮助"><HelpCircle size={18} /></button>
       </div>
 
-      {/* Mobile Chat Drawer */}
-      {showMobileChat && playerMode === 'online' && (
-        <>
-          <div className="mobile-chat-overlay" onClick={() => setShowMobileChat(false)} />
-          <div className="mobile-chat-drawer">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-slate-900 text-lg flex items-center gap-2">
-                <MessageCircle size={18} />
-                房间消息
-              </h3>
-              <button
-                className="grid h-8 w-8 place-items-center rounded-lg border border-slate-200/60"
-                onClick={() => setShowMobileChat(false)}
-                style={{
-                  background: 'linear-gradient(175deg, rgba(255,255,255,.8) 0%, rgba(255,255,255,.6) 100%)',
-                }}
-              >
-                <span className="text-sm font-bold text-slate-500">X</span>
-              </button>
-            </div>
-            {pendingUndoRequest && (
-              <div className="mb-4 rounded-xl border border-amber-200/60 bg-amber-50/80 p-4 text-sm text-amber-900">
-                <p className="font-bold">对方申请悔棋</p>
-                <p className="mt-1 text-amber-700">同意后棋局将回退一步。</p>
-                <div className="mt-3 grid grid-cols-2 gap-2">
-                  <button className="primary-button justify-center text-sm" onClick={() => void respondOnlineUndo(true)}>同意</button>
-                  <button className="secondary-button justify-center text-sm" onClick={() => void respondOnlineUndo(false)}>拒绝</button>
+      {/* Save Qipu Modal */}
+      {showSaveQipu && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,.45)' }} onClick={() => setShowSaveQipu(false)}>
+          <div className="panel w-full max-w-lg p-6 animate-panel-in" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-xl font-bold text-slate-900 mb-4">保存棋谱</h2>
+            <p className="text-sm text-slate-500 mb-5">填写对局信息，生成标准五子棋棋谱文件。</p>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="form-label">先手（黑）参赛队</label>
+                  <input className="field mt-1" value={qipuBlackTeam} onChange={(e) => setQipuBlackTeam(e.target.value)} placeholder="先手参赛队" />
+                </div>
+                <div>
+                  <label className="form-label">后手（白）参赛队</label>
+                  <input className="field mt-1" value={qipuWhiteTeam} onChange={(e) => setQipuWhiteTeam(e.target.value)} placeholder="后手参赛队" />
                 </div>
               </div>
-            )}
-            <div className="chat-stream mb-4" aria-live="polite">
-              {onlineChatMessages.length ? (
-                onlineChatMessages.map((item) => {
-                  const mine = item.sender_color === onlineMyColor && item.sender_email === (user?.email || '访客');
-                  const systemMessage = item.kind && item.kind !== 'chat';
-                  return (
-                    <div key={item.id} className={`chat-bubble ${systemMessage ? 'system' : mine ? 'mine' : 'theirs'}`}>
-                      <div className="flex items-center justify-between gap-3 text-[11px] font-semibold">
-                        <span>{item.sender_color === 'black' ? '黑方' : '白方'} · {item.sender_email || '访客'}</span>
-                        <time>{new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time>
-                      </div>
-                      <p>{item.text}</p>
-                    </div>
-                  );
-                })
-              ) : (
-                <div className="empty-chat">房间消息会显示在这里。</div>
-              )}
-              <div ref={chatEndRef} />
+              <div>
+                <label className="form-label">对弈结果</label>
+                <p className="mt-1 text-sm font-semibold text-slate-800">
+                  {result.winner === 'black' ? '先手胜（黑胜）' : result.winner === 'white' ? '后手胜（白胜）' : result.reason === 'draw' ? '平局' : '进行中'}
+                </p>
+              </div>
+              <div>
+                <label className="form-label">比赛时间及地点</label>
+                <input className="field mt-1" value={qipuDateLocation} onChange={(e) => setQipuDateLocation(e.target.value)} placeholder="例：2025.01.01 14:00 北京" />
+              </div>
+              <div>
+                <label className="form-label">赛事名称</label>
+                <input className="field mt-1" value={qipuTournament} onChange={(e) => setQipuTournament(e.target.value)} placeholder="例：2025 全国五子棋锦标赛" />
+              </div>
+              <div>
+                <label className="form-label">棋谱预览</label>
+                <p className="mt-1 max-h-24 overflow-auto rounded-lg border border-slate-200 p-3 font-mono text-xs leading-5 text-slate-600 bg-slate-50 break-all">
+                  {generateQipuText(
+                    moves,
+                    qipuBlackTeam.trim() || '先手参赛队',
+                    qipuWhiteTeam.trim() || '后手参赛队',
+                    result.winner || (result.reason === 'draw' ? 'draw' : null),
+                    qipuDateLocation.trim() || '未知时间地点',
+                    qipuTournament.trim() || '五子棋对局',
+                  )}
+                </p>
+              </div>
             </div>
-            <div className="flex gap-2">
-              <input
-                className="field min-w-0"
-                value={chatInput}
-                onChange={(event) => setChatInput(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' && !event.shiftKey) {
-                    event.preventDefault();
-                    void submitChat();
-                  }
-                }}
-                maxLength={180}
-                placeholder="发送消息..."
-                aria-label="发送在线对战消息"
-              />
-              <button className="primary-button px-3" onClick={submitChat} disabled={!chatInput.trim() || chatSending} aria-label="发送消息">
-                <Send size={17} />
-              </button>
+            <div className="mt-6 flex gap-3 justify-end">
+              <button className="secondary-button" onClick={() => setShowSaveQipu(false)}>取消</button>
+              <button className="primary-button" onClick={downloadQipu}>下载棋谱 (.txt)</button>
             </div>
-            {chatError && <p className="mt-2 text-sm text-red-600">{chatError}</p>}
           </div>
-        </>
+        </div>
       )}
     </section>
   );

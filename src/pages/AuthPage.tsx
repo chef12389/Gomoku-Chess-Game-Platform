@@ -121,17 +121,41 @@ export function AuthPage({ onDone }: { onDone: () => void }) {
 
           <form className="flex flex-col" onSubmit={submit}>
             {mode === 'guest' ? (
-              <div className="mt-6 rounded-3xl border border-slate-200/60 bg-gradient-to-br from-slate-50 to-white p-8 text-center shadow-inner">
-                <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-amber-100 to-amber-200 text-amber-600 ring-4 ring-amber-50 shadow-md">
-                  <UserRound size={36} />
+              <div className="mt-6 rounded-2xl border border-white/60 p-7 shadow-lg"
+                style={{
+                  background: 'linear-gradient(175deg, rgba(255,255,255,.92) 0%, rgba(255,255,255,.82) 100%)',
+                  backdropFilter: 'blur(20px)',
+                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,1), 0 8px 32px rgba(15,23,42,.08)'
+                }}
+              >
+                <div className="flex items-start gap-4 mb-6">
+                  <div className="flex-shrink-0 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/25">
+                    <UserRound size={28} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs font-bold uppercase tracking-wider text-amber-600">当前用户</span>
+                    </div>
+                    <h2 className="text-xl font-bold text-slate-900 mb-1">访客</h2>
+                    <p className="text-xs text-slate-500">访客模式</p>
+                  </div>
                 </div>
-                <h2 className="text-2xl font-bold text-slate-900 mb-3">直接体验对局</h2>
-                <p className="text-sm text-slate-600 leading-relaxed mb-8">
-                  你可以立即开始人机对弈或本地双人模式；如果你需要云端保存或在线对战，请先登录账号。
-                </p>
-                <button type="submit" className="primary-button w-full h-14 text-lg rounded-2xl">
+                <div className="rounded-xl bg-gradient-to-r from-amber-50/80 to-orange-50/60 border border-amber-100/60 p-4 mb-6">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 mt-0.5">
+                      <Sparkles className="text-amber-500" size={18} />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-slate-800 mb-1">直接体验对局</h3>
+                      <p className="text-sm text-slate-600 leading-relaxed">
+                        你可以立即开始人机对弈或本地双人模式；如果你需要云端保存或在线对战，请先登录账号。
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <button type="submit" className="primary-button w-full h-12 text-base rounded-xl">
                   以访客身份进入
-                  <ArrowRight size={20} />
+                  <ArrowRight size={18} />
                 </button>
               </div>
             ) : (
