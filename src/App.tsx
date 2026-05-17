@@ -132,7 +132,7 @@ export default function App() {
       </header>
 
       <main className="relative z-10 mx-auto max-w-7xl px-6 py-8 max-md:px-3 max-md:py-4">
-        {view === 'game' && <GamePage />}
+        {view === 'game' && <GamePage onNavigate={setView} />}
         {view === 'records' && <RecordsPage />}
         {view === 'user' && <UserPage onLogin={() => setView('auth')} />}
         {view === 'auth' && <AuthPage onDone={enterHome} />}

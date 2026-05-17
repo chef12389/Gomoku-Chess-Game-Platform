@@ -35,6 +35,47 @@ const AI_DIFFICULTY_OPTIONS: Array<{ id: AiDifficulty; label: string; depth: num
 const MOVE_TIME_LIMIT_OPTIONS = [0, 15, 30, 60, 120];
 const soundStorageKey = 'renju.sound.enabled';
 const musicStorageKey = 'renju.music.enabled';
+const savedGameKey = 'renju.saved.game';
+
+interface SavedGameState {
+  board: Cell[][];
+  moves: Move[];
+  nextColor: Stone;
+  phase: GamePhase;
+  mode: OpeningMode;
+  playerMode: PlayerMode;
+  humanSide: Stone;
+  aiDifficulty: AiDifficulty;
+  activeOpeningId: string;
+  nCount: number;
+  nCandidates: Point[];
+  blackSeconds: number;
+  whiteSeconds: number;
+  moveTimeLimitSeconds: number;
+  message: string;
+}
+
+function saveGameState(state: SavedGameState) {
+  try {
+    localStorage.setItem(savedGameKey, JSON.stringify(state));
+  } catch { /* ignore */ }
+}
+
+function loadSavedGameState(): SavedGameState | null {
+  try {
+    const raw = localStorage.getItem(savedGameKey);
+    if (!raw) return null;
+    return JSON.parse(raw) as SavedGameState;
+  } catch {
+    return null;
+  }
+}
+
+function clearSavedGameState() {
+  try {
+    localStorage.removeItem(savedGameKey);
+  } catch { /* ignore */ }
+}
 const backgroundMusicPath = `${import.meta.env.BASE_URL}music/background.ogg`;
 
 const colorText = (color: Stone) => (color === 'black' ? '黑方' : '白方');
@@ -103,7 +144,7 @@ function applyOpening(opening: OpeningDefinition) {
   return { board: nextBoard, moves };
 }
 
-export function GamePage() {
+export function GamePage({ onNavigate }: { onNavigate: (view: string) => void }) {
   const { user } = useAuth();
   const [screen, setScreen] = useState<Screen>('home');
   const [board, setBoard] = useState<Cell[][]>(() => createBoard());
@@ -139,6 +180,7 @@ export function GamePage() {
     return localStorage.getItem(musicStorageKey) === 'true';
   });
   const [showRuleHelp, setShowRuleHelp] = useState(false);
+  const [showRulesModal, setShowRulesModal] = useState(false);
   const [nCount, setNCount] = useState(3);
   const [nCandidates, setNCandidates] = useState<Point[]>([]);
   const [aiThinking, setAiThinking] = useState(false);
@@ -244,6 +286,23 @@ export function GamePage() {
     setMessage(`${colorText(nextColor)}本手已超过 ${moveTimeLimitSeconds} 秒，请尽快落子。`);
   }, [currentTurnSeconds, moveTimeLimitSeconds, nextColor, phase, screen, soundEnabled, turnAlerted]);
 
+  // Auto-save game state for AI and local games (not online)
+  useEffect(() => {
+    if (screen !== 'board' || playerMode === 'online' || moves.length === 0) return;
+    saveGameState({
+      board, moves, nextColor, phase, mode, playerMode, humanSide,
+      aiDifficulty, activeOpeningId, nCount, nCandidates,
+      blackSeconds, whiteSeconds, moveTimeLimitSeconds, message,
+    });
+  }, [screen, playerMode, moves, nextColor, phase, mode, humanSide, aiDifficulty, activeOpeningId, nCount, nCandidates, blackSeconds, whiteSeconds, moveTimeLimitSeconds, message]);
+
+  // Clear saved game when a game finishes
+  useEffect(() => {
+    if (phase === 'finished' && moves.length > 0) {
+      clearSavedGameState();
+    }
+  }, [phase, moves.length]);
+
   useEffect(() => {
     if (playerMode !== 'online' || !onlineRoom) return undefined;
     const id = window.setInterval(async () => {
@@ -303,12 +362,37 @@ export function GamePage() {
     setAiThinking(false);
     setAiProgress(0);
     autoSavedRecordKeyRef.current = null;
+    clearSavedGameState();
   };
 
   const chooseMode = (targetMode: PlayerMode) => {
     setPlayerMode(targetMode);
     setOnlineError('');
     setScreen('setup');
+  };
+
+  const continueGame = () => {
+    const saved = loadSavedGameState();
+    if (!saved) return;
+    setBoard(saved.board);
+    setMoves(saved.moves);
+    setNextColor(saved.nextColor);
+    setPhase(saved.phase);
+    setMode(saved.mode);
+    setPlayerMode(saved.playerMode);
+    setHumanSide(saved.humanSide);
+    setAiDifficulty(saved.aiDifficulty);
+    setActiveOpeningId(saved.activeOpeningId);
+    setNCount(saved.nCount);
+    setNCandidates(saved.nCandidates);
+    setBlackSeconds(saved.blackSeconds);
+    setWhiteSeconds(saved.whiteSeconds);
+    setMoveTimeLimitSeconds(saved.moveTimeLimitSeconds);
+    setCurrentTurnSeconds(0);
+    setTurnAlerted(false);
+    setMessage(saved.message);
+    setResult({ winner: null, line: [] });
+    setScreen('board');
   };
 
   const startGame = () => {
@@ -883,6 +967,37 @@ export function GamePage() {
           </div>
         </div>
 
+        {/* Continue Game */}
+        {(() => {
+          const saved = loadSavedGameState();
+          if (!saved || saved.moves.length === 0 || saved.playerMode === 'online') return null;
+          const modeLabel = saved.playerMode === 'ai' ? '人机对弈' : '本地双人';
+          const sideLabel = saved.playerMode === 'local' ? '' : ` · 你执${colorShort(saved.humanSide)}`;
+          return (
+            <div className="relative overflow-hidden rounded-2xl border border-amber-300/60 shadow-lg"
+              style={{
+                background: 'linear-gradient(135deg, rgba(251,243,219,.92) 0%, rgba(254,243,199,.88) 50%, rgba(252,231,176,.94) 100%)',
+              }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-amber-400/10 via-yellow-400/8 to-amber-500/10 mix-blend-overlay" />
+              <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center gap-5 p-6">
+                <div className="grid h-11 w-11 place-items-center rounded-xl bg-amber-500/20 shrink-0">
+                  <Play size={22} className="text-amber-700" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-lg text-amber-900">有一局未完成的对局</h3>
+                  <p className="text-sm text-amber-700/80 mt-0.5">
+                    {modeLabel} · {saved.mode === 'standard' ? (saved.activeOpeningId === 'custom-opening' ? '自定义开局' : (OPENINGS.find(o => o.id === saved.activeOpeningId)?.name || '指定开局')) : '自由开局'}{sideLabel} · 第 {saved.moves.length + 1} 手 · {colorText(saved.nextColor)}行棋
+                  </p>
+                </div>
+                <button className="shrink-0 primary-button" onClick={continueGame}>
+                  <Play size={17} />继续对局
+                </button>
+              </div>
+            </div>
+          );
+        })()}
+
         {/* Game Modes */}
         <div>
           <h2 className="text-xl font-bold text-slate-900 mb-5 flex items-center gap-2.5">
@@ -947,7 +1062,7 @@ export function GamePage() {
 
         {/* Info cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <div className="glass-chip flex items-center gap-5 p-6 group cursor-pointer">
+          <button className="glass-chip flex items-center gap-5 p-6 group cursor-pointer text-left" onClick={() => setShowRulesModal(true)}>
             <div className="grid h-11 w-11 place-items-center rounded-xl bg-slate-100 text-slate-500 shrink-0 group-hover:bg-amber-100 group-hover:text-amber-600 transition-colors duration-300">
               <BookOpen size={20} />
             </div>
@@ -955,8 +1070,8 @@ export function GamePage() {
               <h4 className="font-bold text-slate-900">棋局规则</h4>
               <p className="text-sm text-slate-500 mt-1">了解标准的五子棋规则与三手交换等专业棋规</p>
             </div>
-          </div>
-          <div className="glass-chip flex items-center gap-5 p-6 group cursor-pointer">
+          </button>
+          <button className="glass-chip flex items-center gap-5 p-6 group cursor-pointer text-left" onClick={() => onNavigate('records')}>
             <div className="grid h-11 w-11 place-items-center rounded-xl bg-slate-100 text-slate-500 shrink-0 group-hover:bg-amber-100 group-hover:text-amber-600 transition-colors duration-300">
               <BarChart3 size={20} />
             </div>
@@ -966,8 +1081,76 @@ export function GamePage() {
                 {user ? '查看你的历史对局记录与胜率统计' : '登录后可以保存并查看你的对局记录'}
               </p>
             </div>
-          </div>
+          </button>
         </div>
+
+        {/* Rules Modal */}
+        {showRulesModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,.45)' }} onClick={() => setShowRulesModal(false)}>
+            <div className="panel w-full max-w-2xl max-h-[85vh] overflow-y-auto p-7 animate-panel-in" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2.5">
+                  <BookOpen size={24} className="text-amber-600" />
+                  五子棋规则
+                </h2>
+                <button className="secondary-button" onClick={() => setShowRulesModal(false)}>关闭</button>
+              </div>
+              <div className="space-y-5 text-sm leading-relaxed text-slate-700">
+                <section>
+                  <h3 className="font-bold text-base text-slate-900 mb-2">一、基本规则</h3>
+                  <ul className="list-disc pl-5 space-y-1.5">
+                    <li>棋盘为 15×15 交叉点，黑方先行，双方轮流在交叉点上落子。</li>
+                    <li>任一方在横、竖、斜任意方向上率先连成连续五子（五连）即获胜。</li>
+                    <li>棋盘下满且无人获胜时，判定为平局。</li>
+                  </ul>
+                </section>
+                <section>
+                  <h3 className="font-bold text-base text-slate-900 mb-2">二、黑棋禁手规则</h3>
+                  <ul className="list-disc pl-5 space-y-1.5">
+                    <li><strong>三三禁手</strong>：黑方一手棋同时形成两个或以上的活三（可以形成五连的四方向上的连续三子）。</li>
+                    <li><strong>四四禁手</strong>：黑方一手棋同时形成两个或以上的四（四连或冲四）。</li>
+                    <li><strong>长连禁手</strong>：黑方一手棋形成超过五子的连续（六连及以上）。</li>
+                    <li>黑方下出禁手时判负。白方不受任何禁手限制。</li>
+                  </ul>
+                </section>
+                <section>
+                  <h3 className="font-bold text-base text-slate-900 mb-2">三、三手交换（Swap）</h3>
+                  <ul className="list-disc pl-5 space-y-1.5">
+                    <li>指定开局模式下，前 3 手（黑1、白2、黑3）按开局棋谱自动摆放。</li>
+                    <li>第 3 手完成后，白方拥有<strong>三手交换权</strong>：可以选择交换双方颜色，或保持当前颜色继续行棋。</li>
+                    <li>交换后，原白方执黑，原黑方执白，由新白方行棋。</li>
+                    <li>该规则旨在平衡先手优势，防止黑方过于有利的开局。</li>
+                  </ul>
+                </section>
+                <section>
+                  <h3 className="font-bold text-base text-slate-900 mb-2">四、五手 N 打（N-move）</h3>
+                  <ul className="list-disc pl-5 space-y-1.5">
+                    <li>第 5 手（黑 5）时，黑方需要在棋盘上同时摆出 <strong>N 个候选点</strong>（通常 N=2~5）。</li>
+                    <li>白方从这 N 个候选点中<strong>保留一个</strong>作为正式的黑 5 落子，其余作废。</li>
+                    <li>之后对局正常进行。此规则进一步削弱黑方开局优势。</li>
+                  </ul>
+                </section>
+                <section>
+                  <h3 className="font-bold text-base text-slate-900 mb-2">五、开局模式说明</h3>
+                  <ul className="list-disc pl-5 space-y-1.5">
+                    <li><strong>指定开局</strong>：使用标准 26 种开局中的一种，自动完成前三手，遵循三手交换和五手 N 打规则。</li>
+                    <li><strong>自由开局</strong>：不限制落子位置，直接开始对弈，无交换和 N 打规则。</li>
+                    <li><strong>自定义开局</strong>：手动完成前三手（黑1须落天元 H8，黑3须在天元 5×5 区域内），之后遵循三手交换和五手 N 打规则。</li>
+                  </ul>
+                </section>
+                <section>
+                  <h3 className="font-bold text-base text-slate-900 mb-2">六、操作说明</h3>
+                  <ul className="list-disc pl-5 space-y-1.5">
+                    <li>点击棋盘交叉点落子，触摸屏设备需要点两次（首次预览，再次确认）。</li>
+                    <li>使用"悔棋"按钮可撤销上一步（人机模式下撤销双方各一手）。</li>
+                    <li>使用"重开"按钮可重新开始当前对局。</li>
+                    <li>对局结束后，棋谱自动保存至棋谱库，也可手动导出棋谱文件。</li>
+                  </ul>
+                </section>
+              </div>
+            </div>
+          </div>
+        )}
       </section>
     );
   }
