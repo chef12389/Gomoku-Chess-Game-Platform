@@ -29,10 +29,10 @@ const SCORES = {
 };
 
 const RENJU_PRO_BOOK: Record<string, Point[]> = {
-  '7-7|6-7|6-5': [{ row: 8, col: 7 }, { row: 8, col: 6 }, { row: 7, col: 5 }],
+  '7-7|6-7|6-8': [{ row: 8, col: 7 }, { row: 8, col: 6 }, { row: 7, col: 5 }],
   '7-7|6-7|5-8': [{ row: 8, col: 6 }, { row: 8, col: 7 }, { row: 6, col: 9 }],
-  '7-7|6-6|5-7': [{ row: 8, col: 7 }, { row: 7, col: 8 }, { row: 8, col: 6 }],
-  '7-7|6-6|5-9': [{ row: 8, col: 6 }, { row: 7, col: 8 }, { row: 9, col: 5 }],
+  '7-7|6-8|8-9': [{ row: 8, col: 7 }, { row: 7, col: 8 }, { row: 8, col: 6 }],
+  '7-7|6-8|8-8': [{ row: 8, col: 6 }, { row: 7, col: 8 }, { row: 9, col: 5 }],
 };
 
 interface ScoredPoint extends Point {
@@ -488,7 +488,7 @@ class GomokuSearchEngine {
 
     if (occupied.length === 0 && color === 'black') return { row: 7, col: 7, score: WIN_SCORE, policy: 'tengen' };
     if (occupied.length === 1 && color === 'white') {
-      const options = [{ row: 6, col: 6 }, { row: 6, col: 7 }, { row: 7, col: 6 }, { row: 8, col: 8 }];
+      const options = [{ row: 6, col: 7 }, { row: 6, col: 8 }, { row: 7, col: 6 }, { row: 6, col: 6 }];
       const legal = options.find((point) => this.isLegalMove(toNumericBoard(board), point.row, point.col, WHITE));
       return legal ? { ...legal, score: 780_000, policy: 'opening-book' } : null;
     }

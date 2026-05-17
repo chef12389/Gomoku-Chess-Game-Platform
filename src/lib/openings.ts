@@ -1,17 +1,17 @@
 import { CENTER } from './board';
 import type { Cell, OpeningDefinition, Point, Stone } from '../types';
 
-const directNames = ['寒星', '溪月', '疏星', '花月', '残月', '雨月', '金星', '松月', '丘月', '新月', '瑞星', '山月', '游星'];
-const diagonalNames = ['长星', '峡月', '恒星', '水月', '流星', '云月', '浦月', '岚月', '银月', '明星', '斜月', '名月', '彗星'];
+const directNames = ['残月', '瑞星', '雨月', '疏星', '松月', '新月', '花月', '寒星', '丘月', '山月', '金星', '溪月', '游星'];
+const diagonalNames = ['斜月', '名月', '恒星', '岚月', '明星', '峡月', '长星', '浦月', '云月', '水月', '银月', '流星', '彗星'];
 
 const directOffsets = [
-  [-2, 0], [-2, 1], [-2, 2], [-1, -2], [-1, -1], [-1, 1], [-1, 2],
-  [0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [2, 0],
+  [-1, 2], [2, 0], [0, 1], [-2, 2], [1, 0], [1, 2], [-1, 1],
+  [-2, 0], [1, 1], [2, 1], [0, 2], [-2, 1], [2, 2],
 ];
 
 const diagonalOffsets = [
-  [-2, -2], [-2, -1], [-1, -2], [-2, 0], [0, -2], [-1, 1], [-2, 2],
-  [1, -2], [1, -1], [1, 1], [1, 2], [2, -2], [2, 2],
+  [1, -1], [2, -1], [0, 2], [2, 1], [2, 0], [-1, 2], [-2, 2],
+  [1, 1], [0, 1], [1, 2], [1, 0], [2, 2], [3, -2],
 ];
 
 const balancedNames = new Set(['疏星', '瑞星', '丘月', '松月', '斜月']);
@@ -36,7 +36,7 @@ export const OPENINGS: OpeningDefinition[] = [
     name: `斜指 ${name}`,
     family: 'diagonal' as const,
     black1: CENTER,
-    white2: { row: CENTER.row - 1, col: CENTER.col - 1 },
+    white2: { row: CENTER.row - 1, col: CENTER.col + 1 },
     black3: { row: CENTER.row + diagonalOffsets[index][0], col: CENTER.col + diagonalOffsets[index][1] },
   })),
 ];
