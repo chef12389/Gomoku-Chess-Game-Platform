@@ -27,10 +27,10 @@ type OpponentStrength = 'normal' | 'strong';
 type AiDifficulty = 'beginner' | 'intermediate' | 'advanced' | 'professional';
 
 const AI_DIFFICULTY_OPTIONS: Array<{ id: AiDifficulty; label: string; depth: number }> = [
-  { id: 'beginner', label: '初级', depth: 2 },
-  { id: 'intermediate', label: '中级', depth: 4 },
-  { id: 'advanced', label: '高级', depth: 6 },
-  { id: 'professional', label: '专业', depth: 8 },
+  { id: 'beginner', label: '1', depth: 4 },
+  { id: 'intermediate', label: '2', depth: 6 },
+  { id: 'advanced', label: '3', depth: 8 },
+  { id: 'professional', label: '4', depth: 10 },
 ];
 const MOVE_TIME_LIMIT_OPTIONS = [0, 15, 30, 60, 120];
 const soundStorageKey = 'renju.sound.enabled';
